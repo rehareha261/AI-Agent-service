@@ -1,0 +1,29 @@
+{
+  "total": 4,
+  "passed": 4,
+  "failed": 0,
+  "errors": 0,
+  "success_rate": 100.0,
+  "details": [
+    {
+      "test": "signature_generation",
+      "status": "passed",
+      "message": "Signatures correctement g\u00e9n\u00e9r\u00e9es"
+    },
+    {
+      "test": "cache_cleanup",
+      "status": "passed",
+      "message": "Cache nettoy\u00e9 correctement"
+    },
+    {
+      "test": "duplicate_prevention",
+      "status": "passed",
+      "message": "Webhook dupliqu\u00e9 correctement bloqu\u00e9"
+    },
+    {
+      "test": "monitoring_resilience",
+      "status": "passed",
+      "message": "4 t\u00e2ches de monitoring actives"
+    }
+  ]
+}

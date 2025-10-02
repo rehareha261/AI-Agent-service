@@ -1,0 +1,71 @@
+GUIDE VALIDATION HUMAINE VIA MONDAY.COM - AI AGENT
+
+=== NOUVEAU FONCTIONNEMENT ===
+1. L'agent traite la tâche et crée une Pull Request
+2. L'agent POSTE UNE UPDATE dans Monday.com avec les résultats
+3. L'humain REPLY dans l'update : "oui" (valide) ou "non" (debug)
+4. Si "oui" → merge automatique
+5. Si "non" → debug avec OpenAI LLM puis re-test
+
+=== WORKFLOW MODIFIÉ ===
+Ancien: prepare → analyze → implement → test → debug → qa → finalize → update → END
+Nouveau: prepare → analyze → implement → test → debug → qa → finalize → MONDAY_VALIDATION → [merge OU openai_debug] → update → END
+
+=== INTERFACE MONDAY.COM ===
+- L'agent poste une UPDATE avec résultats
+- Update contient: statut tests, URL PR, erreurs éventuelles
+- Instructions claires pour l'humain
+- L'humain REPLY directement dans Monday.com
+
+=== ANALYSE INTELLIGENTE DES RÉPONSES ===
+🧠 SYSTÈME HYBRIDE AVEC ESCALADE PROGRESSIVE:
+
+NIVEAU 1 - Patterns Rapides (gratuit, <1s):
+- APPROBATION: "oui", "yes", "ok", "valide", "approve", "merge", "✅", "lgtm", "+1"
+- REJET: "non", "no", "debug", "fix", "problème", "❌", "refais", "-1"
+- QUESTIONS: "comment?", "why?", "peux-tu expliquer?"
+
+NIVEAU 2 - OpenAI LLM (si ambigu, ~2s):
+- Analyse contextuelle approfondie
+- Détection de nuances et intentions complexes
+- Identification de préoccupations spécifiques
+
+NIVEAU 3 - Clarification Humaine (si très ambigu):
+- Demande de précision automatique
+- "Pouvez-vous préciser: approuver ou rejeter?"
+
+=== BASE DE DONNÉES ===
+Tables ajoutées:
+- human_validations: Demandes de validation
+- human_validation_responses: Réponses humaines
+- validation_actions: Actions post-validation (merge, etc.)
+
+Migration: data/human_validation_migration.sql
+
+=== LANGSMITH INTEGRATION ===
+Toutes les validations humaines sont tracées dans LangSmith avec:
+- Updates Monday.com postées
+- Réponses humaines (oui/non)
+- Debug OpenAI si demandé
+- Temps de validation et décisions
+- Liens vers les PRs
+
+=== EXPIRATION ===
+- Délai par défaut: 24h
+- Auto-expiration via fonction PostgreSQL mark_expired_validations()
+- Nettoyage automatique des anciennes validations (3 mois)
+
+=== UTILISATION ===
+1. Créer une tâche dans Monday.com avec l'URL GitHub OBLIGATOIRE dans la description
+   Exemple: "Implémente login JWT pour: https://github.com/user/repo"
+2. Lancer le workflow normalement depuis Monday.com
+3. L'agent traite la tâche et poste une UPDATE avec les résultats
+4. L'humain REPLY dans l'update Monday.com:
+   - "oui" → merge automatique
+   - "non" → debug OpenAI puis re-test
+5. Le workflow reprend automatiquement
+
+=== CONFIGURATION SIMPLIFIÉE ===
+✅ GITHUB_TOKEN dans .env (un seul token global)
+❌ DEFAULT_REPO_URL supprimé (URL maintenant dans description)
+📝 URL GitHub OBLIGATOIRE dans chaque description de tâche 

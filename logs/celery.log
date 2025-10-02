@@ -1,0 +1,480 @@
+[2025-09-25 09:13:27] INFO     [celery:25] [MainProcess] 🧪 Test d'écriture dans logs.txt
+[2025-09-25 09:13:55] INFO     [celery:25] [MainProcess] 📝 Message Celery principal
+[2025-09-25 09:13:55] INFO     [celery.task:25] [MainProcess] 📝 Exécution d'une tâche Celery
+[2025-09-25 09:13:55] INFO     [celery.worker:25] [MainProcess] 📝 Message du worker Celery
+[2025-09-25 09:13:55] INFO     [ai_agent_background:25] [MainProcess] 📝 Message du background AI
+[2025-09-25 09:18:56] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-09-25T06:18:56.666333Z"}
+[2025-09-25 09:18:56] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-09-25T06:18:56.667155Z"}
+[2025-09-25 09:18:56] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-09-25T06:18:56.667387Z"}
+[2025-09-25 09:18:56] INFO     [celery.apps.worker:175] [MainProcess] celery@MBP130-SMARTELIA-2.local ready.
+[2025-09-25 09:19:15] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.process_monday_webhook[2421f631-6343-4465-a7a4-0717394eeafd] received
+[2025-09-25 09:19:17] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.execute_workflow[3018476c-8ee5-40cd-b93f-433fc19adbbd] received
+[2025-09-25 09:23:38] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-09-25T06:23:38.859630Z"}
+[2025-09-25 09:23:39] ERROR    [celery.worker.request:643] [MainProcess] Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-09-25 10:13:20] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-09-25T07:13:20.750256Z"}
+[2025-09-25 10:13:20] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-09-25T07:13:20.751396Z"}
+[2025-09-25 10:13:20] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-09-25T07:13:20.751802Z"}
+[2025-09-25 10:13:20] INFO     [celery.apps.worker:175] [MainProcess] celery@MBP130-SMARTELIA-2.local ready.
+[2025-09-25 10:13:24] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.execute_workflow[e9df27a1-d1c8-4dda-a9b2-d31f66ecc169] received
+[2025-09-25 10:13:59] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-09-25T07:13:59.305730Z"}
+[2025-09-25 10:13:59] ERROR    [celery.worker.request:643] [MainProcess] Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-09-25 10:16:24] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-09-25T07:16:24.028916Z"}
+[2025-09-25 10:16:24] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-09-25T07:16:24.029739Z"}
+[2025-09-25 10:16:24] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-09-25T07:16:24.030197Z"}
+[2025-09-25 10:16:24] INFO     [celery.apps.worker:175] [MainProcess] celery@MBP130-SMARTELIA-2.local ready.
+[2025-09-25 10:16:28] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.process_monday_webhook[a2a6b6b1-4f84-48f9-9f3c-11ee93b0f01d] received
+[2025-09-25 10:16:31] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.execute_workflow[f54d5cec-2610-4b30-8a50-3e70be6e8c82] received
+[2025-09-25 10:21:55] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-09-25T07:21:55.988958Z"}
+[2025-09-25 10:21:56] ERROR    [celery.worker.request:643] [MainProcess] Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-09-25 10:46:44] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-09-25T07:46:44.843764Z"}
+[2025-09-25 10:46:44] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-09-25T07:46:44.844922Z"}
+[2025-09-25 10:46:44] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-09-25T07:46:44.845169Z"}
+[2025-09-25 10:46:44] INFO     [celery.apps.worker:175] [MainProcess] celery@MBP130-SMARTELIA-2.local ready.
+[2025-09-25 10:46:54] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.process_monday_webhook[d465bdbc-1878-48ac-a86c-613b6eae1398] received
+[2025-09-25 10:46:56] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.execute_workflow[c9f2da76-fa4d-4949-b887-c3df637594c2] received
+[2025-09-25 10:51:06] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-09-25T07:51:06.263429Z"}
+[2025-09-25 10:51:06] ERROR    [celery.worker.request:643] [MainProcess] Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-09-25 11:10:21] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-09-25T08:10:21.226724Z"}
+[2025-09-25 11:10:21] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-09-25T08:10:21.228257Z"}
+[2025-09-25 11:10:21] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-09-25T08:10:21.228522Z"}
+[2025-09-25 11:10:21] INFO     [celery.apps.worker:175] [MainProcess] celery@MBP130-SMARTELIA-2.local ready.
+[2025-09-25 11:28:50] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-09-25T08:28:50.376047Z"}
+[2025-09-25 11:28:50] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-09-25T08:28:50.377386Z"}
+[2025-09-25 11:28:50] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-09-25T08:28:50.378109Z"}
+[2025-09-25 11:28:50] INFO     [celery.apps.worker:175] [MainProcess] celery@MBP130-SMARTELIA-2.local ready.
+[2025-09-25 11:28:52] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.process_monday_webhook[7dc58ae3-e2cb-43f0-9c96-57a5cbf80c8c] received
+[2025-09-25 11:28:55] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.execute_workflow[05a20b79-fa55-49b6-951f-94cb3b27da6b] received
+[2025-09-25 11:28:55] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.handle_dead_letter[43165862-02f4-48fa-b488-f8fd5c45d1d8] received
+[2025-09-25 11:29:24] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-09-25T08:29:24.009872Z"}
+[2025-09-25 11:34:38] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-09-25T08:34:38.058395Z"}
+[2025-09-25 11:34:38] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-09-25T08:34:38.059217Z"}
+[2025-09-25 11:34:38] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-09-25T08:34:38.059441Z"}
+[2025-09-25 11:34:38] INFO     [celery.apps.worker:175] [MainProcess] celery@MBP130-SMARTELIA-2.local ready.
+[2025-09-25 11:35:18] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-09-25T08:35:18.869149Z"}
+[2025-09-25 12:55:54] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-09-25T09:55:54.068910Z"}
+[2025-09-25 12:55:54] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-09-25T09:55:54.069794Z"}
+[2025-09-25 12:55:54] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-09-25T09:55:54.070048Z"}
+[2025-09-25 12:55:54] INFO     [celery.apps.worker:175] [MainProcess] celery@MBP130-SMARTELIA-2.local ready.
+[2025-09-25 12:56:01] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.process_monday_webhook[652245a2-cfd5-4c09-810f-ea18aed2d809] received
+[2025-09-25 12:56:04] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.execute_workflow[24bf1a2d-aa5a-417f-a71e-21f48aa78c10] received
+[2025-09-25 13:02:28] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-09-25T10:02:28.101058Z"}
+[2025-09-25 13:02:28] ERROR    [celery.worker.request:643] [MainProcess] Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-09-25 13:51:45] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-09-25T10:51:45.440031Z"}
+[2025-09-25 13:51:45] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-09-25T10:51:45.441479Z"}
+[2025-09-25 13:51:45] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-09-25T10:51:45.441722Z"}
+[2025-09-25 13:51:45] INFO     [celery.apps.worker:175] [MainProcess] celery@MBP130-SMARTELIA-2.local ready.
+[2025-09-25 13:51:48] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.process_monday_webhook[23c8ced4-8c03-4352-9f89-6e58b191e156] received
+[2025-09-25 13:51:51] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.execute_workflow[4efdb2f9-fd1a-4ee4-845c-c181ee8dbed5] received
+[2025-09-25 13:53:22] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-09-25T10:53:22.774118Z"}
+[2025-09-25 13:56:49] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-09-25T10:56:49.121237Z"}
+[2025-09-25 13:56:49] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-09-25T10:56:49.122745Z"}
+[2025-09-25 13:56:49] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-09-25T10:56:49.123160Z"}
+[2025-09-25 13:56:49] INFO     [celery.apps.worker:175] [MainProcess] celery@MBP130-SMARTELIA-2.local ready.
+[2025-09-25 13:56:49] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-09-25T10:56:49.658880Z"}
+[2025-09-25 13:59:43] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-09-25T10:59:43.609168Z"}
+[2025-09-25 13:59:43] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-09-25T10:59:43.612684Z"}
+[2025-09-25 13:59:43] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-09-25T10:59:43.613881Z"}
+[2025-09-25 13:59:43] INFO     [celery.apps.worker:175] [MainProcess] celery@MBP130-SMARTELIA-2.local ready.
+[2025-09-25 13:59:48] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-09-25T10:59:48.888971Z"}
+[2025-09-25 14:01:50] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-09-25T11:01:50.359853Z"}
+[2025-09-25 14:01:50] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-09-25T11:01:50.363446Z"}
+[2025-09-25 14:01:50] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-09-25T11:01:50.363657Z"}
+[2025-09-25 14:01:50] INFO     [celery.apps.worker:175] [MainProcess] celery@MBP130-SMARTELIA-2.local ready.
+[2025-09-25 14:01:54] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.process_monday_webhook[dcf3fac0-b00b-44d4-b69d-24ee44227107] received
+[2025-09-25 14:01:57] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.execute_workflow[c708bef3-0f7d-4e0b-bac1-ca46152c42c2] received
+[2025-09-25 14:07:59] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-09-25T11:07:59.396189Z"}
+[2025-09-25 14:07:59] ERROR    [celery.worker.request:643] [MainProcess] Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-09-25 14:20:49] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-09-25T11:20:49.257165Z"}
+[2025-09-25 14:20:49] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-09-25T11:20:49.258512Z"}
+[2025-09-25 14:20:49] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-09-25T11:20:49.258985Z"}
+[2025-09-25 14:20:49] INFO     [celery.apps.worker:175] [MainProcess] celery@MBP130-SMARTELIA-2.local ready.
+[2025-09-25 14:20:52] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-09-25T11:20:52.271315Z"}
+[2025-09-25 14:20:52] ERROR    [celery.worker.request:643] [MainProcess] Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 0.')
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 0.
+"""
+[2025-09-25 14:23:10] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-09-25T11:23:10.350817Z"}
+[2025-09-25 14:23:10] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-09-25T11:23:10.352213Z"}
+[2025-09-25 14:23:10] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-09-25T11:23:10.352606Z"}
+[2025-09-25 14:23:10] INFO     [celery.apps.worker:175] [MainProcess] celery@MBP130-SMARTELIA-2.local ready.
+[2025-09-25 14:23:13] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.process_monday_webhook[7ff30155-ba80-4776-ac41-e177ea6f7467] received
+[2025-09-25 14:23:16] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.execute_workflow[958f299a-f31e-4e86-a054-2f204305beed] received
+[2025-09-25 14:28:15] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-09-25T11:28:15.534653Z"}
+[2025-09-25 14:28:16] ERROR    [celery.worker.request:643] [MainProcess] Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-09-25 15:03:36] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-09-25T12:03:36.993953Z"}
+[2025-09-25 15:03:36] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-09-25T12:03:36.994835Z"}
+[2025-09-25 15:03:36] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-09-25T12:03:36.995044Z"}
+[2025-09-25 15:03:36] INFO     [celery.apps.worker:175] [MainProcess] celery@MBP130-SMARTELIA-2.local ready.
+[2025-09-25 15:03:41] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.process_monday_webhook[f170947b-70a9-4d8d-9a9a-86f849dde759] received
+[2025-09-25 15:03:46] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.execute_workflow[b171523a-ee7e-41c1-badb-77382712a806] received
+[2025-09-25 15:13:54] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-09-25T12:13:54.424024Z"}
+[2025-09-25 15:24:29] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-09-25T12:24:29.727784Z"}
+[2025-09-25 15:24:29] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-09-25T12:24:29.729131Z"}
+[2025-09-25 15:24:29] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-09-25T12:24:29.729665Z"}
+[2025-09-25 15:24:29] INFO     [celery.apps.worker:175] [MainProcess] celery@MBP130-SMARTELIA-2.local ready.
+[2025-09-25 15:24:33] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.execute_workflow[b5e9204e-1a8c-457d-960b-827adf3b7fe1] received
+[2025-09-25 15:31:36] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-09-25T12:31:36.798891Z"}
+[2025-09-25 15:31:37] ERROR    [celery.worker.request:643] [MainProcess] Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-09-25 15:35:26] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-09-25T12:35:26.412922Z"}
+[2025-09-25 15:35:26] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-09-25T12:35:26.413931Z"}
+[2025-09-25 15:35:26] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-09-25T12:35:26.414139Z"}
+[2025-09-25 15:35:26] INFO     [celery.apps.worker:175] [MainProcess] celery@MBP130-SMARTELIA-2.local ready.
+[2025-09-25 15:35:27] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.process_monday_webhook[5fbf43c7-23dc-4acb-92c3-42e3c593b477] received
+[2025-09-25 15:35:31] INFO     [celery.worker.strategy:161] [MainProcess] Task ai_agent_background.execute_workflow[8aed824a-2a65-4e06-b548-6e245c5eb23f] received
+[2025-09-25 15:54:49] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-09-25T12:54:49.650179Z"}
+[2025-09-25 15:54:50] ERROR    [celery.worker.request:643] [MainProcess] Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-09-25 16:09:10] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-09-25T13:09:10.108388Z"}
+[2025-09-25 16:09:10] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-09-25T13:09:10.109592Z"}
+[2025-09-25 16:09:10] WARNING  [celery.redirected:232] [MainProcess] {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-09-25T13:09:10.110098Z"}
+[2025-09-25 16:09:10] INFO     [celery.apps.worker:175] [MainProcess] celery@MBP130-SMARTELIA-2.local ready.
+[2025-09-25 16:20:59] WARNING  [celery.redirected:232] [MainProcess] {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-09-25T13:20:59.472741Z"}
+[2025-09-25 16:21:00] ERROR    [celery.worker.request:643] [MainProcess] Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 0.')
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/stagiaire_vycode/Stage/AI-Agent/venv/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 0.
+"""
