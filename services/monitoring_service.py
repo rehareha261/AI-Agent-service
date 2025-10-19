@@ -3,7 +3,7 @@
 import asyncio
 import json
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, asdict
 from collections import defaultdict, deque
@@ -120,7 +120,7 @@ class MonitoringDashboard:
         """Enregistre une métrique."""
         labels = labels or {}
         point = MetricPoint(
-            timestamp=datetime.now(),
+            timestamp=datetime.now(timezone.utc),
             value=value,
             labels=labels,
             metric_name=metric_name
@@ -174,7 +174,7 @@ class MonitoringDashboard:
         if logs:
             for log in logs:
                 workflow["logs"].append({
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
                     "step": step_name,
                     "message": log
                 })
@@ -377,7 +377,7 @@ class MonitoringDashboard:
                 }
                 for wf_id, metrics in self.workflow_metrics.items()
                 if metrics.status in [WorkflowStatus.COMPLETED.value, WorkflowStatus.FAILED.value]
-                and self._is_today(datetime.now())  # TODO: Utiliser timestamp des métriques
+                and self._is_today(datetime.now(timezone.utc))  # TODO: Utiliser timestamp des métriques
             ]
         }
 
@@ -556,7 +556,7 @@ class MonitoringDashboard:
 
     async def _trigger_alert(self, rule: Dict, context: Dict):
         """Déclenche une alerte."""
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
 
         # Éviter le spam (max 1 alerte par heure pour la même règle)
         if rule["last_triggered"]:
@@ -594,7 +594,7 @@ class MonitoringDashboard:
 
         while self.is_monitoring_active:  # ✅ CORRECTION: Condition d'arrêt
             try:
-                cutoff = datetime.now() - timedelta(hours=24)
+                cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
 
                 # Nettoyer les métriques anciennes
                 for metric_name, points in self.metrics_store.items():
@@ -606,7 +606,7 @@ class MonitoringDashboard:
                 old_workflows = [
                     wf_id for wf_id, metrics in self.workflow_metrics.items()
                     if metrics.status in [WorkflowStatus.COMPLETED.value, WorkflowStatus.FAILED.value]
-                    and (datetime.now() - datetime.fromisoformat(metrics.workflow_id.split("_")[-1]) if "_" in metrics.workflow_id else datetime.now()).days > 7
+                    and (datetime.now(timezone.utc) - datetime.fromisoformat(metrics.workflow_id.split("_")[-1]) if "_" in metrics.workflow_id else datetime.now(timezone.utc)).days > 7
                 ]
 
                 for wf_id in old_workflows:
@@ -631,7 +631,7 @@ class MonitoringDashboard:
 
     def _is_today(self, timestamp: datetime) -> bool:
         """Vérifie si un timestamp est d'aujourd'hui."""
-        return timestamp.date() == datetime.now().date()
+        return timestamp.date() == datetime.now(timezone.utc).date()
 
 # Décorateur pour monitorer automatiquement les fonctions
 def monitor_workflow_step(step_name: str):

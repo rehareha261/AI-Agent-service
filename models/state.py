@@ -21,8 +21,11 @@ class GraphState(TypedDict, total=False):
     langsmith_session: Optional[str]  # Session LangSmith pour tracing
     
     # ✅ CORRECTION: Ajout des champs de persistence manquants
-    db_task_id: Optional[int]  # ID de la tâche en base de données
-    db_run_id: Optional[int]   # ID du run en base de données
+    # Ces champs sont des int et doivent le rester (ce sont des foreign keys DB)
+    db_task_id: Optional[int]  # ID de la tâche en base de données (tasks_id)
+    db_run_id: Optional[int]   # ID du run en base de données (tasks_runs_id)
+    db_step_id: Optional[int]  # ID du step en cours (run_steps_id)
+    current_step_id: Optional[int]  # Alias pour db_step_id (pour compatibilité)
 
 
 # Alias pour compatibilité

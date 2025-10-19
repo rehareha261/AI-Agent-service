@@ -1,8 +1,10 @@
-"""Modèles de données pour l'agent IA."""
+# -*- coding: utf-8 -*-
+"""Modeles de donnees pour l'agent IA."""
 
-from datetime import datetime
-from typing import Dict, Any, Optional, List
-from pydantic import BaseModel, Field
+import json
+from datetime import datetime, timezone
+from typing import Dict, Any, Optional, List, Union
+from pydantic import BaseModel, Field, field_validator, field_serializer
 from enum import Enum
 
 
@@ -28,7 +30,7 @@ class TaskPriority(str, Enum):
 
 class TaskRequest(BaseModel):
     """Requête de tâche pour l'agent IA."""
-    task_id: str = Field(..., description="ID unique de la tâche")
+    task_id: str = Field(..., description="ID unique de la tâche (Monday item ID ou task_db_id)")
     title: str = Field(..., description="Titre de la tâche")
     description: str = Field(..., description="Description détaillée")
     task_type: TaskType = Field(default=TaskType.FEATURE, description="Type de tâche")
@@ -40,6 +42,40 @@ class TaskRequest(BaseModel):
     technical_context: Optional[str] = Field(None, description="Contexte technique")
     files_to_modify: Optional[List[str]] = Field(None, description="Fichiers à modifier")
     estimated_complexity: Optional[str] = Field(None, description="Complexité estimée")
+    
+    # ✅ AJOUT: Champs pour Monday.com et DB
+    monday_item_id: Optional[int] = Field(None, description="ID de l'item Monday.com")
+    board_id: Optional[int] = Field(None, description="ID du board Monday.com")
+    task_db_id: Optional[int] = Field(None, description="ID de la tâche dans la base de données (tasks_id)")
+    
+    @field_validator('task_id', mode='before')
+    @classmethod
+    def convert_task_id_to_str(cls, v):
+        """Convertit task_id en string si c'est un int (validation)."""
+        return str(v) if v is not None else v
+    
+    @field_validator('estimated_complexity', mode='before')
+    @classmethod
+    def convert_complexity_to_str(cls, v):
+        """Convertit estimated_complexity en string si c'est un int ou float."""
+        if v is None:
+            return v
+        return str(v)
+    
+    @field_serializer('task_id')
+    def serialize_task_id(self, value: Any) -> str:
+        """Sérialise task_id en string (évite les warnings Pydantic)."""
+        return str(value) if value is not None else value
+    
+    @field_serializer('estimated_complexity')
+    def serialize_complexity(self, value: Any) -> Optional[str]:
+        """Sérialise estimated_complexity en string."""
+        return str(value) if value is not None else value
+    
+    model_config = {
+        "ser_json_inf_nan": 'constants',
+        "validate_assignment": True  # Valider aussi lors de l'assignment
+    }
     
     
 class WorkflowStatus(str, Enum):
@@ -92,8 +128,23 @@ class WorkflowStateModel(BaseModel):
     started_at: Optional[datetime] = Field(None)
     completed_at: Optional[datetime] = Field(None)
 
-    class Config:
-        use_enum_values = True
+    # ✅ CORRECTION BONUS: Validateur pour workflow_id
+    @field_validator('workflow_id', mode='before')
+    @classmethod
+    def convert_workflow_id_to_str(cls, v):
+        """Convertit workflow_id en string si c'est un int pour éviter les warnings Pydantic."""
+        if v is None:
+            return v
+        return str(v)
+    
+    @field_serializer('workflow_id')
+    def serialize_workflow_id(self, value: Any) -> str:
+        """Sérialise workflow_id en string (évite les warnings Pydantic)."""
+        return str(value) if value is not None else value
+
+    model_config = {
+        "use_enum_values": True
+    }
 
 
 class MondayColumnValue(BaseModel):
@@ -123,6 +174,17 @@ class MondayEvent(BaseModel):
     newColumnValues: Optional[Dict[str, MondayColumnValue]] = Field(None, description="Nouvelles valeurs")
     userId: Optional[int] = Field(None, description="ID de l'utilisateur qui a fait le changement")
     triggeredAt: Optional[str] = Field(None, description="Timestamp du déclenchement")
+    
+    # ✅ CORRECTION BONUS: Validateurs pour convertir string → int pour IDs Monday.com
+    @field_validator('pulseId', 'boardId', 'userId', mode='before')
+    @classmethod
+    def convert_monday_ids_to_int(cls, v):
+        """Convertit les IDs Monday.com en int si c'est un string."""
+        if v is None:
+            return v
+        if isinstance(v, str):
+            return int(v)
+        return v
 
 class WebhookPayload(BaseModel):
     """Payload complet reçu du webhook Monday.com avec exemples concrets."""
@@ -298,7 +360,7 @@ class ErrorResponse(BaseModel):
     """Réponse d'erreur standardisée."""
     error: str = Field(..., description="Message d'erreur")
     details: Optional[str] = Field(None, description="Détails supplémentaires")
-    timestamp: datetime = Field(default_factory=datetime.now)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class TaskStatusResponse(BaseModel):
@@ -309,6 +371,17 @@ class TaskStatusResponse(BaseModel):
     current_step: Optional[str] = Field(None, description="Étape actuelle")
     estimated_completion: Optional[datetime] = Field(None, description="Completion estimée")
     result_url: Optional[str] = Field(None, description="URL du résultat")
+    
+    @field_validator('task_id', mode='before')
+    @classmethod
+    def convert_task_id_to_str(cls, v):
+        """Convertit task_id en string si c'est un int."""
+        return str(v) if v is not None else v
+    
+    @field_serializer('task_id')
+    def serialize_task_id(self, value: Any) -> str:
+        """Sérialise task_id en string (évite les warnings Pydantic)."""
+        return str(value) if value is not None else value
 
 
 class GitOperationResult(BaseModel):
@@ -346,7 +419,7 @@ class TestResult(BaseModel):
 class HumanValidationStatus(str, Enum):
     """Statuts de validation humaine."""
     PENDING = "pending"          # En attente de validation
-    APPROVED = "approve"         # Approuvé par l'humain  
+    APPROVED = "approved"        # Approuvé par l'humain (corrigé: approve -> approved pour correspondre à la DB)
     REJECTED = "rejected"        # Rejeté par l'humain
     EXPIRED = "expired"          # Délai d'attente dépassé
     CANCELLED = "cancelled"      # Annulé
@@ -359,21 +432,156 @@ class HumanValidationRequest(BaseModel):
     task_id: str = Field(..., description="ID de la tâche")
     task_title: str = Field(..., description="Titre de la tâche")
     
+    model_config = {
+        "str_strip_whitespace": True,
+        "validate_assignment": True
+    }
+    
+    # ✅ CORRECTION BONUS: Validateurs pour convertir automatiquement les IDs
+    @field_validator('validation_id', 'workflow_id', 'task_id', mode='before')
+    @classmethod
+    def convert_ids_to_str(cls, v):
+        """Convertit tous les IDs en string si c'est un int pour éviter les warnings Pydantic."""
+        if v is None:
+            return v
+        return str(v)
+    
+    @field_serializer('validation_id', 'workflow_id', 'task_id')
+    def serialize_ids(self, value: Any) -> str:
+        """Sérialise les IDs en string (évite les warnings Pydantic)."""
+        return str(value) if value is not None else value
+    
     # Informations sur le code à valider
-    generated_code: Dict[str, str] = Field(..., description="Code généré par fichier")
+    # ✅ CORRECTION ERREUR 1: Accepter string ou dict pour generated_code
+    # La DB stocke en JSON string, mais le code Python peut passer un dict
+    generated_code: Union[Dict[str, str], str] = Field(..., description="Code généré par fichier (JSON string ou dict)")
+    
+    @field_validator('generated_code', mode='before')
+    @classmethod
+    def normalize_generated_code(cls, v):
+        """
+        Normalise generated_code pour accepter dict ou string.
+        Si c'est un dict, on le convertit en JSON string pour la DB.
+        Si c'est déjà un string, on le garde tel quel.
+        """
+        if v is None:
+            return json.dumps({"summary": "Code généré - voir fichiers modifiés"})
+        
+        if isinstance(v, dict):
+            return json.dumps(v, ensure_ascii=False, indent=2)
+        
+        if isinstance(v, str):
+            # Vérifier que c'est un JSON valide
+            try:
+                json.loads(v)
+                return v
+            except json.JSONDecodeError:
+                # Si ce n'est pas un JSON valide, l'encapsuler
+                return json.dumps({"summary": v})
+        
+        # Type inattendu, convertir en string
+        return json.dumps({"raw": str(v)})
+    
     code_summary: str = Field(..., description="Résumé des modifications")
     files_modified: List[str] = Field(..., description="Liste des fichiers modifiés")
+    
+    @field_validator('files_modified', mode='before')
+    @classmethod
+    def normalize_files_modified(cls, v):
+        """
+        Normalise files_modified pour s'assurer que c'est toujours une liste de strings.
+        Gère les cas dict, list, string unique, None.
+        """
+        if v is None:
+            return []
+        
+        # Si c'est déjà une liste, s'assurer que tous les éléments sont des strings
+        if isinstance(v, list):
+            return [str(f) for f in v if f]
+        
+        # Si c'est un dict (code_changes), extraire les clés
+        if isinstance(v, dict):
+            return list(v.keys())
+        
+        # Si c'est un string unique, le mettre dans une liste
+        if isinstance(v, str):
+            return [v]
+        
+        # Type inattendu, retourner liste vide
+        return []
     
     # Informations de context
     original_request: str = Field(..., description="Demande originale")
     implementation_notes: Optional[str] = Field(None, description="Notes d'implémentation")
-    test_results: Optional[Dict[str, Any]] = Field(None, description="Résultats des tests")
+    
+    # ✅ CORRECTION: test_results doit aussi être un JSON string pour la DB
+    test_results: Optional[Union[Dict[str, Any], str]] = Field(None, description="Résultats des tests (JSON string ou dict)")
+    
+    @field_validator('test_results', mode='before')
+    @classmethod
+    def normalize_test_results(cls, v):
+        """
+        Normalise test_results pour accepter dict ou string.
+        Si c'est un dict, on le convertit en JSON string pour la DB.
+        Si c'est déjà un string, on le garde tel quel.
+        """
+        if v is None:
+            return None
+        
+        if isinstance(v, dict):
+            return json.dumps(v, ensure_ascii=False, indent=2)
+        
+        if isinstance(v, str):
+            # Vérifier que c'est un JSON valide
+            try:
+                json.loads(v)
+                return v
+            except json.JSONDecodeError:
+                # Si ce n'est pas un JSON valide, l'encapsuler
+                return json.dumps({"raw": v})
+        
+        # Type inattendu, convertir en string
+        return json.dumps({"raw": str(v)})
     
     # Pull Request prête mais pas encore mergée
-    pr_info: Optional[PullRequestInfo] = Field(None, description="Informations de la PR")
+    # ✅ CORRECTION: pr_info doit aussi être un JSON string pour la DB
+    pr_info: Optional[Union[PullRequestInfo, str]] = Field(None, description="Informations de la PR (JSON string ou objet)")
+    
+    @field_validator('pr_info', mode='before')
+    @classmethod
+    def normalize_pr_info(cls, v):
+        """
+        Normalise pr_info pour accepter objet PullRequestInfo ou string.
+        Si c'est un objet, on le convertit en JSON string pour la DB.
+        Si c'est déjà un string, on le garde tel quel.
+        """
+        if v is None:
+            return None
+        
+        # Si c'est un objet PullRequestInfo, le convertir en dict puis JSON string
+        if hasattr(v, 'model_dump'):
+            # Pydantic v2
+            return json.dumps(v.model_dump(), ensure_ascii=False, indent=2, default=str)
+        elif hasattr(v, 'dict'):
+            # Pydantic v1
+            return json.dumps(v.dict(), ensure_ascii=False, indent=2, default=str)
+        elif isinstance(v, dict):
+            # Déjà un dict
+            return json.dumps(v, ensure_ascii=False, indent=2, default=str)
+        elif isinstance(v, str):
+            # Vérifier que c'est un JSON valide
+            try:
+                json.loads(v)
+                return v
+            except json.JSONDecodeError:
+                # Si ce n'est pas un JSON valide, l'encapsuler
+                return json.dumps({"raw": v})
+        
+        # Type inattendu, convertir en string
+        return json.dumps({"raw": str(v)})
     
     # Métadonnées
-    created_at: datetime = Field(default_factory=datetime.now, description="Date de création")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Date de création")
     expires_at: Optional[datetime] = Field(None, description="Date d'expiration")
     requested_by: Optional[str] = Field(None, description="Demandeur")
 
@@ -390,7 +598,7 @@ class HumanValidationResponse(BaseModel):
     
     # Métadonnées
     validated_by: Optional[str] = Field(None, description="Validateur")
-    validated_at: datetime = Field(default_factory=datetime.now, description="Date de validation")
+    validated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Date de validation")
     
     # Actions à prendre
     should_merge: bool = Field(default=False, description="Doit merger automatiquement")
@@ -402,6 +610,17 @@ class HumanValidationResponse(BaseModel):
     specific_concerns: Optional[List[str]] = Field(default_factory=list, description="Préoccupations spécifiques détectées")
     suggested_action: Optional[str] = Field(None, description="Action suggérée par l'IA")
     requires_clarification: Optional[bool] = Field(False, description="Si une clarification est requise")
+    
+    @field_validator('validation_id', mode='before')
+    @classmethod
+    def convert_validation_id_to_str(cls, v):
+        """Convertit validation_id en string si c'est un int."""
+        return str(v) if v is not None else v
+    
+    @field_serializer('validation_id')
+    def serialize_validation_id(self, value: Any) -> str:
+        """Sérialise validation_id en string (évite les warnings Pydantic)."""
+        return str(value) if value is not None else value
 
 
 class HumanValidationSummary(BaseModel):
@@ -417,3 +636,49 @@ class HumanValidationSummary(BaseModel):
     # Indicateurs visuels
     is_urgent: bool = Field(default=False, description="Validation urgente")
     has_test_failures: bool = Field(default=False, description="A des échecs de tests")
+    
+    @field_validator('validation_id', mode='before')
+    @classmethod
+    def convert_validation_id_to_str(cls, v):
+        """Convertit validation_id en string si c'est un int."""
+        return str(v) if v is not None else v
+    
+    @field_serializer('validation_id')
+    def serialize_validation_id(self, value: Any) -> str:
+        """Sérialise validation_id en string (évite les warnings Pydantic)."""
+        return str(value) if value is not None else value
+
+
+# ==================== NOUVEAUX MODÈLES POUR WORKFLOW DEPUIS UPDATES ====================
+
+class UpdateType(str, Enum):
+    """Types d'updates Monday détectés."""
+    NEW_REQUEST = "new_request"
+    MODIFICATION = "modification"
+    BUG_REPORT = "bug_report"
+    QUESTION = "question"
+    AFFIRMATION = "affirmation"
+    VALIDATION_RESPONSE = "validation_response"
+
+
+class UpdateIntent(BaseModel):
+    """Intention détectée dans un update Monday."""
+    type: UpdateType
+    confidence: float = Field(ge=0.0, le=1.0, description="Confiance du LLM (0-1)")
+    requires_workflow: bool
+    reasoning: str
+    extracted_requirements: Optional[Dict[str, Any]] = None
+    
+    model_config = {
+        "use_enum_values": True
+    }
+
+
+class UpdateAnalysisContext(BaseModel):
+    """Contexte pour l'analyse d'un update."""
+    task_title: str
+    task_status: str
+    monday_status: Optional[str] = None
+    original_description: str
+    task_type: Optional[str] = None
+    priority: Optional[str] = None

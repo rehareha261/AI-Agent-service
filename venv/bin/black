@@ -1,4 +1,4 @@
-#!/Users/stagiaire_vycode/Stage/AI-Agent/venv/bin/python3.12
+#!/Users/rehareharanaivo/Desktop/AI-Agent/venv/bin/python3.12
 import sys
 from black import patched_main
 if __name__ == '__main__':

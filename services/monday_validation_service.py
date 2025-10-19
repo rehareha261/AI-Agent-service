@@ -1,7 +1,9 @@
 """Service de validation humaine via les updates Monday.com."""
 
 import asyncio
+import os
 import re
+import time
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List
 from models.schemas import HumanValidationStatus, HumanValidationResponse
@@ -83,7 +85,19 @@ class MondayValidationService:
         
         # Statut de la Pull Request
         if pr_created:
-            message += "• ✅ Pull Request créée\n"
+            # ✅ CORRECTION: Simplifier la récupération de l'URL PR
+            pr_url = workflow_results.get("pr_url")
+            if not pr_url:
+                pr_info = workflow_results.get("pr_info")
+                if isinstance(pr_info, dict):
+                    pr_url = pr_info.get("url", "")
+                elif pr_info:  # C'est un objet (PullRequestInfo)
+                    pr_url = getattr(pr_info, "url", "")
+            
+            if pr_url:
+                message += f"• ✅ Pull Request créée: {pr_url}\n"
+            else:
+                message += "• ✅ Pull Request créée\n"
         else:
             message += "• ❌ Pull Request non créée\n"
         
@@ -144,7 +158,8 @@ class MondayValidationService:
                         "timestamp": datetime.now().isoformat(),
                         "fallback_mode": True,
                         "permissions_error": True,
-                        "error": error_message
+                        "error": error_message,
+                        "workflow_results": workflow_results  # ✅ CORRECTION: Ajouter workflow_results
                     }
                     
                     return update_id
@@ -160,7 +175,8 @@ class MondayValidationService:
                         "timestamp": datetime.now().isoformat(),
                         "fallback_mode": True,
                         "api_error": True,
-                        "error": error_message
+                        "error": error_message,
+                        "workflow_results": workflow_results  # ✅ CORRECTION: Ajouter workflow_results
                     }
                     
                     return update_id
@@ -174,13 +190,17 @@ class MondayValidationService:
             
             logger.info(f"✅ Update de validation créée avec succès: {update_id}")
             
-            # Enregistrer la validation en attente
+            # Enregistrer la validation en attente avec validation_id depuis workflow_results
+            validation_id_from_results = workflow_results.get("validation_id")
+            
             self.pending_validations[str(update_id)] = {
                 "item_id": item_id,
                 "message": comment,
                 "timestamp": datetime.now().isoformat(),
                 "fallback_mode": False,
-                "permissions_error": False
+                "permissions_error": False,
+                "workflow_results": workflow_results,  # ✅ CORRECTION: Ajouter workflow_results pour le contexte
+                "validation_id": validation_id_from_results  # ✅ NOUVEAU: Stocker validation_id pour les réponses DB
             }
             
             return str(update_id)
@@ -197,7 +217,8 @@ class MondayValidationService:
                 "timestamp": datetime.now().isoformat(),
                 "fallback_mode": True,
                 "exception_error": True,
-                "error": str(e)
+                "error": str(e),
+                "workflow_results": workflow_results if 'workflow_results' in locals() else {}  # ✅ CORRECTION: Ajouter workflow_results
             }
             
             return update_id
@@ -232,39 +253,46 @@ class MondayValidationService:
         item_id = validation_data.get("item_id")
         
         timeout_seconds = timeout_minutes * 60
-        check_interval = 15  # Vérifier toutes les 15 secondes
         
-        # ✅ CORRECTION: Adapter la logique d'abandon selon le timeout
+        # ✅ AMÉLIORATION: Intervalle de polling réduit et configurable (15s → 5s)
+        check_interval = int(os.getenv("MONDAY_VALIDATION_CHECK_INTERVAL", "5"))  # Défaut: 5 secondes
+        
+        # ✅ CORRECTION: Adapter la logique d'abandon selon le timeout et l'intervalle
         if timeout_minutes <= 10:
-            max_consecutive_no_changes = 8  # 2 minutes pour timeouts courts
+            max_consecutive_no_changes = max(4, int(120 / check_interval))  # ~2 minutes
         else:
-            max_consecutive_no_changes = 20  # 5 minutes pour timeouts longs
+            max_consecutive_no_changes = max(10, int(300 / check_interval))  # ~5 minutes
         
-        logger.info(f"⏳ Attente de reply humaine sur update {update_id} (timeout: {timeout_minutes}min, check_interval: {check_interval}s)")
+        logger.info(f"⏳ Attente de reply humaine sur update {update_id} (timeout: {timeout_minutes}min, check_interval: {check_interval}s, max_no_changes: {max_consecutive_no_changes})")
         
-        # ✅ CORRECTION: Ajouter une vérification initiale immédiate
-        try:
-            initial_check = await self._get_item_updates(item_id)
-            if initial_check:
-                created_at_str = validation_data.get("timestamp") or validation_data.get("created_at")
-                if created_at_str:
-                    try:
-                        created_at = datetime.fromisoformat(created_at_str.replace('Z', '+00:00'))
-                    except Exception:
-                        created_at = datetime.now()
-                else:
-                    created_at = datetime.now()
+        # ✅ CORRECTION: Ajouter une vérification initiale immédiate avec retry
+        created_at = datetime.now()
+        created_at_str = validation_data.get("timestamp") or validation_data.get("created_at")
+        if created_at_str:
+            try:
+                created_at = datetime.fromisoformat(created_at_str.replace('Z', '+00:00'))
+            except Exception as e:
+                logger.warning(f"⚠️ Erreur parsing timestamp: {e}")
+                created_at = datetime.now()
+        
+        # ✅ NOUVEAU: Faire 3 vérifications rapides au démarrage (0s, 2s, 5s)
+        for check_delay in [0, 2, 5]:
+            if check_delay > 0:
+                await asyncio.sleep(check_delay)
                 
-                immediate_reply = self._find_human_reply(update_id, initial_check, created_at)
-                if immediate_reply:
-                    logger.info("⚡ Réponse humaine trouvée immédiatement!")
-                    validation_context = self._prepare_analysis_context(validation_data)
-                    response = await self._parse_human_reply(immediate_reply, update_id, validation_context)
-                    self.pending_validations[update_id]["status"] = response.status.value
-                    self.pending_validations[update_id]["response"] = response
-                    return response
-        except Exception as e:
-            logger.warning(f"⚠️ Erreur lors de la vérification initiale: {e}")
+            try:
+                initial_check = await self._get_item_updates(item_id)
+                if initial_check:
+                    immediate_reply = self._find_human_reply(update_id, initial_check, created_at)
+                    if immediate_reply:
+                        logger.info(f"⚡ Réponse humaine trouvée après {check_delay}s!")
+                        validation_context = self._prepare_analysis_context(validation_data)
+                        response = await self._parse_human_reply(immediate_reply, update_id, validation_context)
+                        self.pending_validations[update_id]["status"] = response.status.value
+                        self.pending_validations[update_id]["response"] = response
+                        return response
+            except Exception as e:
+                logger.warning(f"⚠️ Erreur lors de la vérification à {check_delay}s: {e}")
         
         # Boucle d'attente principale
         elapsed = 0
@@ -370,7 +398,7 @@ class MondayValidationService:
         self.pending_validations[update_id]["status"] = "expired"
         
         return HumanValidationResponse(
-            validation_id=update_id,
+            validation_id=update_id or f"validation_{int(time.time())}_{id(self)}",
             status=HumanValidationStatus.EXPIRED,
             comments=f"Timeout ({reason}) - Aucune réponse humaine reçue dans les {timeout_minutes} minutes",
             validated_by="system",
@@ -510,57 +538,127 @@ class MondayValidationService:
         if since.tzinfo is None:
             since = since.replace(tzinfo=timezone.utc)
         
+        # ✅ CORRECTION CRITIQUE: Trouver le timestamp réel de l'update de validation
+        # au lieu d'utiliser 'since' qui peut être incorrect
+        validation_update_timestamp = None
+        for update in updates:
+            if str(update.get("id")) == str(original_update_id):
+                timestamp_str = update.get("created_at")
+                if timestamp_str:
+                    try:
+                        validation_update_timestamp = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+                        logger.info(f"📅 Timestamp de l'update de validation trouvé: {validation_update_timestamp.isoformat()}")
+                        break
+                    except Exception as e:
+                        logger.warning(f"⚠️ Erreur parsing timestamp update validation: {e}")
+        
+        # Si on a trouvé le timestamp réel, l'utiliser; sinon utiliser 'since' fourni
+        reference_time = validation_update_timestamp if validation_update_timestamp else since
+        logger.info(f"🕐 Timestamp de référence pour recherche: {reference_time.isoformat()}")
+        
         # ✅ AMÉLIORATION: Recherche en plusieurs passes pour être plus robuste
         candidate_replies = []
         
-        for update in updates:
+        logger.info(f"🔍 Recherche de reply parmi {len(updates)} updates pour update_id={original_update_id}")
+        logger.info(f"🕐 Recherche des updates créées après: {reference_time.isoformat()}")
+        
+        for idx, update in enumerate(updates):
             # Protection: vérifier que update est un dictionnaire
             if not isinstance(update, dict):
+                logger.debug(f"⚠️ Update {idx} n'est pas un dict: {type(update)}")
+                continue
+            
+            # ✅ CORRECTION CRITIQUE: Exclure l'update de validation originale elle-même
+            # pour éviter les faux positifs (le message contient "VALIDATION REQUISE")
+            update_id = update.get("id")
+            if str(update_id) == str(original_update_id):
+                logger.debug(f"⏭️ Ignorer l'update de validation originale (ID: {update_id})")
                 continue
                 
             # Vérifier si c'est une reply récente
             update_time_str = update.get("created_at")
             if not update_time_str:
+                logger.debug(f"⚠️ Update {idx} sans timestamp")
                 continue
             
             try:
                 update_time = datetime.fromisoformat(update_time_str.replace('Z', '+00:00'))
-                if update_time <= since:
+                # ✅ CORRECTION CRITIQUE: Accepter les updates même légèrement avant l'heure de création
+                # pour gérer les délais de synchronisation (marge de 30 secondes)
+                time_threshold = reference_time - timedelta(seconds=30)
+                if update_time <= time_threshold:
+                    logger.debug(f"⏭️ Update {idx} trop ancien ({update_time_str} <= {time_threshold.isoformat()})")
                     continue  # Trop ancien
             except Exception as e:
                 logger.warning(f"⚠️ Erreur parsing timestamp {update_time_str}: {e}")
                 continue
             
             body = update.get("body", "").strip()
+            reply_to_id = update.get("reply_to_id") or update.get("parent_id")
+            update_type = update.get("type", "update")
+            
+            # ✅ AMÉLIORATION: Log plus détaillé pour chaque update récent
+            logger.info(f"📝 Update {idx}: id={update_id}, type={update_type}, reply_to={reply_to_id}, créé={update_time_str}, body='{body[:50]}'...")
+            
             if not body:
                 continue
             
-            # ✅ PASSE 1: Replies directes avec reply_to_id
-            reply_to_id = update.get("reply_to_id") or update.get("parent_id")
-            if reply_to_id == original_update_id:
-                if self._is_validation_reply(body):
-                    logger.info(f"💬 Reply directe trouvée: '{body[:50]}'")
-                    return update
+            # ✅ PASSE 1: Replies directes avec reply_to_id (priorité maximale)
+            # ✅ CORRECTION CRITIQUE: Comparer les IDs en normalisant les types (string vs int)
+            ids_match = False
+            if reply_to_id is not None:
+                try:
+                    # Normaliser les deux en string pour la comparaison
+                    reply_to_id_str = str(reply_to_id).strip()
+                    original_id_str = str(original_update_id).strip()
+                    ids_match = reply_to_id_str == original_id_str
+                    
+                    if ids_match:
+                        logger.info(f"🔍 ID match trouvé: reply_to_id={reply_to_id_str}, original={original_id_str}")
+                except Exception as e:
+                    logger.warning(f"⚠️ Erreur comparaison IDs: {e}")
+            
+            if ids_match and self._is_validation_reply(body):
+                logger.info(f"💬 Reply directe trouvée: '{body[:50]}'")
+                return update
+            elif ids_match:
+                # Reply directe mais pas un mot-clé clair - garder comme candidat prioritaire
                 candidate_replies.append(("direct_reply", update, body))
             
             # ✅ PASSE 2: Updates récentes qui mentionnent des mots-clés de validation
+            # (haute priorité même sans reply_to_id si le contenu est clair)
             elif self._is_validation_reply(body):
-                candidate_replies.append(("validation_keywords", update, body))
+                # Vérifier si c'est une reply (type="reply") pour priorité plus élevée
+                if update_type == "reply":
+                    logger.info(f"💬 Reply avec mot-clé de validation trouvée: '{body[:50]}'")
+                    candidate_replies.append(("reply_with_keyword", update, body))
+                else:
+                    candidate_replies.append(("validation_keywords", update, body))
             
             # ✅ PASSE 3: Updates récentes avec des patterns de réponse
             elif self._looks_like_validation_response(body):
-                candidate_replies.append(("response_pattern", update, body))
+                if update_type == "reply":
+                    candidate_replies.append(("reply_pattern", update, body))
+                else:
+                    candidate_replies.append(("response_pattern", update, body))
         
         # ✅ SÉLECTION: Prendre la meilleure réponse par ordre de priorité
         if candidate_replies:
-            # Trier par priorité: direct_reply > validation_keywords > response_pattern
-            priority_order = {"direct_reply": 1, "validation_keywords": 2, "response_pattern": 3}
-            candidate_replies.sort(key=lambda x: priority_order[x[0]])
+            # Trier par priorité: direct_reply > reply_with_keyword > reply_pattern > validation_keywords > response_pattern
+            priority_order = {
+                "direct_reply": 1, 
+                "reply_with_keyword": 2, 
+                "reply_pattern": 3,
+                "validation_keywords": 4, 
+                "response_pattern": 5
+            }
+            candidate_replies.sort(key=lambda x: priority_order.get(x[0], 99))
             
             best_match = candidate_replies[0]
             logger.info(f"💬 Meilleure reply trouvée ({best_match[0]}): '{best_match[2][:50]}'")
             return best_match[1]
         
+        logger.warning(f"⚠️ Aucune reply valide trouvée parmi {len(updates)} updates")
         return None
     
     def _looks_like_validation_response(self, text: str) -> bool:
@@ -591,31 +689,56 @@ class MondayValidationService:
         # ✅ CORRECTION: Nettoyer le texte des caractères invisibles et HTML
         import re
         
+        if not reply_text:
+            return False
+        
         # Supprimer BOM et autres caractères invisibles
-        cleaned_text = reply_text.replace('\ufeff', '').replace('\u200b', '').replace('\u00a0', '')
+        cleaned_text = reply_text.replace('\ufeff', '').replace('\u200b', '').replace('\u00a0', '').replace('\xa0', ' ')
         
-        # Supprimer les tags HTML basiques
-        cleaned_text = re.sub(r'<[^>]+>', '', cleaned_text).strip().lower()
+        # Supprimer les tags HTML basiques et markdown
+        cleaned_text = re.sub(r'<[^>]+>', '', cleaned_text)
+        cleaned_text = re.sub(r'\*\*([^*]+)\*\*', r'\1', cleaned_text)  # Supprimer **bold**
+        cleaned_text = cleaned_text.strip().lower()
         
-        # Mots-clés pour approbation
+        logger.debug(f"🔍 Vérification texte validation: '{cleaned_text}'")
+        
+        # ✅ AMÉLIORATION: Détecter les réponses très courtes et simples en premier
+        if cleaned_text in ['oui', 'yes', 'ok', 'non', 'no', 'y', 'n', 'o', 'valide', 'approve', 'reject']:
+            logger.info(f"✅ Réponse courte détectée: '{cleaned_text}'")
+            return True
+        
+        # Mots-clés pour approbation (patterns larges)
         approval_patterns = [
-            r'\b(oui|yes|ok|valide?|approve?d?|accept|go)\b',
-            r'\b(merge|ship|deploy)\b',
-            r'^\s*[✅✓]\s*$'
+            r'\b(oui|yes|ok|valide?|approve?d?|accept|go|lgtm)\b',
+            r'\b(merge|ship|deploy|good|perfect|correct)\b',
+            r'^\s*[✅✓]\s*',
+            r'looks?\s+good',
+            r"c['']?est\s+bon",  # ✅ CORRECTION: Utiliser guillemets doubles pour la string
+            r'je\s+valide'
         ]
         
         # Mots-clés pour rejet/debug
         rejection_patterns = [
-            r'\b(non|no|debug|fix|reject|refuse)\b',
-            r'\b(probl[eè]me?s?|issue|error|bug)\b',  # ✅ CORRECTION: Gérer les accents français
-            r'^\s*[❌✗]\s*$'
+            r'\b(non|no|debug|fix|reject|refuse|nope)\b',
+            r'\b(probl[eè]me?s?|issue|error|bug|erreur)\b',
+            r'^\s*[❌✗]\s*',
+            r'ne\s+marche\s+pas',
+            r'pas\s+(bon|ok|valide)'
         ]
         
-        # Vérifier les patterns
-        for pattern in approval_patterns + rejection_patterns:
+        # Vérifier les patterns d'approbation
+        for pattern in approval_patterns:
             if re.search(pattern, cleaned_text, re.IGNORECASE):
+                logger.info(f"✅ Pattern d'approbation trouvé: {pattern} dans '{cleaned_text}'")
                 return True
         
+        # Vérifier les patterns de rejet
+        for pattern in rejection_patterns:
+            if re.search(pattern, cleaned_text, re.IGNORECASE):
+                logger.info(f"✅ Pattern de rejet trouvé: {pattern} dans '{cleaned_text}'")
+                return True
+        
+        logger.debug(f"❌ Aucun pattern de validation trouvé dans: '{cleaned_text}'")
         return False
     
     async def _parse_human_reply(self, reply: Dict[str, Any], validation_id: str, context: Optional[Dict[str, Any]] = None) -> HumanValidationResponse:
@@ -625,9 +748,9 @@ class MondayValidationService:
         if not isinstance(reply, dict):
             logger.error(f"❌ Reply invalide (type {type(reply)}): {reply}")
             return HumanValidationResponse(
-                validation_id=validation_id,
-                status=HumanValidationStatus.ERROR,
-                comments="Reply invalide",
+                validation_id=validation_id or f"validation_{int(time.time())}_{id(self)}",
+                status=HumanValidationStatus.REJECTED,  # ✅ CORRECTION: ERROR n'existe pas, utiliser REJECTED
+                comments="Reply invalide - erreur système",
                 validated_by="system",
                 should_merge=False,
                 should_continue_workflow=False
@@ -677,8 +800,15 @@ class MondayValidationService:
             if decision.confidence < 0.7:
                 enriched_comments += f"\n[IA] Confiance faible ({decision.confidence:.2f}) - Vérification recommandée"
             
+            # ✅ CORRECTION CRITIQUE: Utiliser le validation_id de la base de données, pas l'update_id Monday
+            db_validation_id = context.get("validation_id") if context else None
+            if not db_validation_id:
+                # Fallback: chercher dans pending_validations
+                pending_validation = self.pending_validations.get(validation_id, {})
+                db_validation_id = pending_validation.get("validation_id", validation_id)
+            
             return HumanValidationResponse(
-                validation_id=validation_id,
+                validation_id=db_validation_id or validation_id or f"validation_{int(time.time())}_{id(self)}",
                 status=status,
                 comments=enriched_comments,
                 validated_by=author,
@@ -700,7 +830,7 @@ class MondayValidationService:
             is_approval = self._is_approval_reply(body)
             
             return HumanValidationResponse(
-                validation_id=validation_id,
+                validation_id=validation_id or f"validation_{int(time.time())}_{id(self)}",
                 status=HumanValidationStatus.APPROVED if is_approval else HumanValidationStatus.REJECTED,
                 comments=f"{body}\n\n[IA] Analyse simple utilisée (erreur système)",
                 validated_by=author,
@@ -742,7 +872,8 @@ class MondayValidationService:
             "success_level": workflow_results.get("success_level", "unknown"),
             "urgent": False,  # Pourrait être extrait des métadonnées de tâche
             "created_at": validation_data.get("timestamp") or validation_data.get("created_at"),
-            "workflow_duration": self._calculate_workflow_duration(validation_data)
+            "workflow_duration": self._calculate_workflow_duration(validation_data),
+            "validation_id": validation_data.get("validation_id")  # ✅ NOUVEAU: Inclure validation_id pour les réponses DB
         }
         
         return context
@@ -756,7 +887,13 @@ class MondayValidationService:
                     created_at = datetime.fromisoformat(created_at_str.replace('Z', '+00:00'))
                 else:
                     created_at = created_at_str
-                duration = (datetime.now() - created_at).total_seconds() / 60
+                # ✅ CORRECTION: S'assurer que les datetimes ont le même timezone
+                from datetime import timezone
+                now_utc = datetime.now(timezone.utc)
+                # Si created_at est offset-naive, le rendre offset-aware
+                if created_at.tzinfo is None:
+                    created_at = created_at.replace(tzinfo=timezone.utc)
+                duration = (now_utc - created_at).total_seconds() / 60
                 return int(duration)
         except Exception:
             pass
@@ -764,7 +901,9 @@ class MondayValidationService:
     
     def cleanup_completed_validations(self, older_than_hours: int = 24):
         """Nettoie les validations terminées anciennes."""
-        cutoff = datetime.now() - timedelta(hours=older_than_hours)
+        # ✅ CORRECTION: Utiliser datetime avec timezone
+        from datetime import timezone
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=older_than_hours)
         
         to_remove = []
         for update_id, validation in self.pending_validations.items():

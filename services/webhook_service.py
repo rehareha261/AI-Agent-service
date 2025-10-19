@@ -60,14 +60,14 @@ class WebhookService:
 
             # ✅ NOUVEAU: Acquérir un verrou pour ce webhook
             if webhook_signature in self._processing_locks:
-                logger.warning(f"🔒 Webhook en cours de traitement - attente...")
+                logger.warning("🔒 Webhook en cours de traitement - attente...")
                 # Attendre maximum 30 secondes
                 for _ in range(30):
                     await asyncio.sleep(1)
                     if webhook_signature not in self._processing_locks:
                         break
                 else:
-                    logger.error(f"❌ Timeout - webhook toujours en cours de traitement")
+                    logger.error("❌ Timeout - webhook toujours en cours de traitement")
                     return {
                         "success": False,
                         "error": "Webhook timeout - traitement parallèle détecté"
@@ -158,26 +158,26 @@ class WebhookService:
                         "status_code": 400
                     }
 
-                # 8. Sauvegarder la tâche en base
+                # 8. Sauvegarder la tâche en base (seulement si elle n'existe pas)
                 task_id = await self._save_task(task_request)
 
-                # 9. Sauvegarder le run en base
-                run_id = await self._save_task_run(task_id, task_request)
+                # ✅ CORRECTION: Ne plus créer le run ici - il sera créé par le workflow lui-même
+                # Évite la duplication et les conflits de statut
+                # run_id = await self._save_task_run(task_id, task_request)
 
-                # Note : Le statut de la tâche est automatiquement mis à jour par le trigger sync_task_status
+                # Note : Le statut de la tâche sera mis à jour par le workflow via les triggers
 
                 # 10. Mettre à jour le webhook avec la tâche liée
                 await self._update_webhook_status(webhook_id, 'processed', related_task_id=task_id)
 
-                # 11. ✅ CORRECTION: Ne plus lancer le workflow ici pour éviter la duplication
-                # Le workflow est déjà lancé par main.py via process_monday_webhook
-                logger.info(f"📋 Tâche créée et prête pour workflow: {task_request.title}")
+                # 11. ✅ Tâche créée et prête - le workflow sera lancé par celery_app
+                logger.info(f"📋 Tâche créée et prête pour workflow: {task_request.title} (ID: {task_id})")
 
-                # Retourner le succès sans lancer un deuxième workflow
+                # Retourner le succès - le workflow sera géré par celery_app.process_monday_webhook
                 return {
                     "success": True,
-                    "message": "Tâche créée avec succès - workflow géré par main.py",
-                    "task_id": task_request.task_id,
+                    "message": "Tâche créée avec succès - workflow géré par Celery",
+                    "task_id": task_id,  # ✅ Retourner le tasks_id de la BD
                     "status": "created",
                     "status_code": 201  # Created
                 }
@@ -188,17 +188,18 @@ class WebhookService:
 
             except Exception as wf_err:
                 err_msg = str(wf_err)
-                logger.error(f"❌ Erreur lors de l'envoi du workflow à Celery: {err_msg}")
+                logger.error(f"❌ Erreur lors de la création de la tâche: {err_msg}")
 
-                # Mettre à jour le statut de la tâche en échec
-                await self._update_task_status(task_id, "failed")
-
+                # ✅ CORRECTION: Ne pas modifier le statut ici - laisser le workflow gérer
+                # Le workflow mettra à jour le statut correctement selon son exécution
+                
+                # Gestion spéciale pour les transitions de statut (ne devrait plus arriver)
                 if "Invalid status transition" in err_msg:
-                    logger.warning(f"⚠️ Transition de statut idempotente ignorée: {err_msg}")
+                    logger.warning(f"⚠️ Transition de statut détectée (ignorée): {err_msg}")
                     return {
                         "success": True,
-                        "message": "Workflow lancé avec avertissement (transition identique ignorée)",
-                        "task_id": task_request.task_id,
+                        "message": "Tâche créée avec avertissement (transition ignorée)",
+                        "task_id": getattr(task_request, 'task_id', 'unknown'),
                         "warning": err_msg,
                         "status_code": 200
                     }
@@ -307,12 +308,53 @@ class WebhookService:
 
             # 1. Vérifier si la tâche existe déjà par monday_item_id
             existing_task = await conn.fetchrow("""
-                SELECT tasks_id, internal_status FROM tasks
+                SELECT tasks_id, internal_status, description, repository_url FROM tasks
                 WHERE monday_item_id = $1
             """, int(task_request.task_id))
 
             if existing_task:
                 logger.info(f"📋 Tâche existante trouvée par ID: {existing_task['tasks_id']}, statut: {existing_task['internal_status']}")
+                
+                # ✅ CORRECTION CRITIQUE: TOUJOURS mettre à jour la description si elle a changé
+                # (pour capturer les updates/commentaires Monday.com enrichis)
+                needs_update = False
+                updates = []
+                params = []
+                param_idx = 1
+                
+                # Mettre à jour la description si:
+                # 1. Elle est vide dans la DB ET on en a une nouvelle
+                # 2. La nouvelle est PLUS LONGUE (enrichie avec updates)
+                # ⚠️ PROTECTION: Ne JAMAIS écraser une longue description par une plus courte
+                if task_request.description and (
+                    not existing_task['description'] or  # Cas 1: vide en DB
+                    len(task_request.description) > len(existing_task['description'] or '')  # Cas 2: enrichie (plus longue)
+                ):
+                    updates.append(f"description = ${param_idx}")
+                    params.append(task_request.description)
+                    param_idx += 1
+                    needs_update = True
+                    logger.info(f"✅ Mise à jour de la description (ancienne: {len(existing_task['description'] or '')} chars → nouvelle: {len(task_request.description)} chars)")
+                    if "--- Commentaires et précisions additionnelles ---" in task_request.description:
+                        logger.info("📝 Description enrichie avec des updates Monday.com détectée")
+                
+                if not existing_task['repository_url'] and task_request.repository_url:
+                    updates.append(f"repository_url = ${param_idx}")
+                    params.append(task_request.repository_url)
+                    param_idx += 1
+                    needs_update = True
+                    logger.info(f"✅ Mise à jour de l'URL du repository: {task_request.repository_url}")
+                
+                if needs_update:
+                    params.append(existing_task['tasks_id'])
+                    update_query = f"""
+                        UPDATE tasks 
+                        SET {', '.join(updates)}, updated_at = NOW()
+                        WHERE tasks_id = ${param_idx}
+                    """
+                    await conn.execute(update_query, *params)
+                    logger.info(f"📝 Tâche {existing_task['tasks_id']} mise à jour avec les nouvelles données")
+                
                 return existing_task['tasks_id']
 
             # 2. Vérifier les doublons par titre + créé dans les 5 dernières minutes
@@ -510,19 +552,56 @@ class WebhookService:
             # DEBUG: Afficher toutes les colonnes disponibles
             if "column_values" in item_data:
                 # ✅ PROTECTION: Normaliser column_values en liste pour le traitement
-                column_values = item_data["column_values"]
-                if isinstance(column_values, dict):
-                    # Cas normal : l'API Monday.com retourne parfois un dict au lieu d'une liste
-                    logger.debug(f"🔧 column_values reçu comme dict, conversion en liste ({len(column_values)} colonnes)")
-                    column_values = list(column_values.values())
-                elif not isinstance(column_values, list):
+                column_values_raw = item_data["column_values"]
+                column_values = []
+                
+                if isinstance(column_values_raw, dict):
+                    # Cas dict: transformer en liste en préservant les IDs des colonnes
+                    logger.debug(f"🔧 column_values reçu comme dict, conversion en liste ({len(column_values_raw)} colonnes)")
+                    for col_id, col_data in column_values_raw.items():
+                        if isinstance(col_data, dict):
+                            # Ajouter l'ID à l'objet colonne s'il n'existe pas déjà
+                            if "id" not in col_data:
+                                col_data["id"] = col_id
+                            column_values.append(col_data)
+                        else:
+                            # Format inattendu: créer un objet colonne basique
+                            column_values.append({"id": col_id, "text": str(col_data), "value": col_data})
+                elif isinstance(column_values_raw, list):
+                    # Cas liste: utiliser directement
+                    column_values = column_values_raw
+                else:
                     # Cas anormal : type inattendu
-                    logger.warning(f"⚠️ column_values type inattendu: {type(column_values)}, fallback vers liste vide")
+                    logger.warning(f"⚠️ column_values type inattendu: {type(column_values_raw)}, fallback vers liste vide")
                     column_values = []
-                # Si c'est déjà une liste, on la garde telle quelle
 
+                # Afficher les colonnes pour debug
                 column_names = [col.get("id", "no_id") for col in column_values if isinstance(col, dict)]
                 logger.info(f"🔍 DEBUG - Colonnes disponibles dans Monday.com: {column_names}")
+                
+                # Log détaillé des colonnes pour debugging
+                if column_names:
+                    logger.info(f"📋 {len(column_names)} colonnes trouvées: {', '.join(column_names[:10])}{'...' if len(column_names) > 10 else ''}")
+                
+                # ✅ VALIDATION: Vérifier les colonnes importantes (pas bloquant)
+                # On cherche des colonnes utiles mais ce n'est pas obligatoire car on peut
+                # récupérer les infos depuis les updates Monday.com
+                important_columns = {
+                    "link": "Repository URL (configuré)",
+                    "monday_doc_v2": "Documentation",
+                    "task_owner": "Propriétaire",
+                    "task_status": "Statut"
+                }
+                
+                found_important = []
+                for col_id, description in important_columns.items():
+                    if col_id in column_names:
+                        found_important.append(f"{description} ({col_id})")
+                
+                if found_important:
+                    logger.info(f"✅ Colonnes utiles disponibles: {', '.join(found_important[:3])}")
+                
+                # Note: Les descriptions viennent des updates Monday.com, pas des colonnes
 
                 # ✅ AMÉLIORATION: Chercher la description avec plus de flexibilité
                 description_candidates = []
@@ -547,34 +626,46 @@ class WebhookService:
                     source_column = description_candidates[0][2]
                     logger.info(f"📝 Description sélectionnée depuis colonne '{source_column}': {description[:100]}...")
 
-            # ✅ FALLBACK 1: Chercher dans les updates/posts de l'item (description récente)
-            if not description:
-                logger.info("🔍 Recherche de description dans les updates Monday.com...")
-                try:
-                    # ✅ CORRECTION: Vérifier la configuration Monday.com avant l'appel
-                    if not hasattr(self.monday_tool, 'api_token') or not self.monday_tool.api_token:
-                        logger.info("💡 Monday.com non configuré - utilisation de description par défaut")
-                        description = f"Tâche {task_info.get('task_id', 'N/A')}: {task_info.get('title', 'Développement')}"
-                    else:
-                        updates_result = await self.monday_tool._arun(
-                            action="get_item_updates",
-                            item_id=task_info["task_id"]
-                        )
+            # ✅ AMÉLIORATION CRITIQUE: TOUJOURS récupérer les updates/commentaires Monday.com
+            # pour enrichir la description avec les précisions de l'utilisateur
+            additional_context = []
+            logger.info("🔍 Récupération des updates Monday.com pour enrichir le contexte...")
+            try:
+                # ✅ CORRECTION: Vérifier la configuration Monday.com avant l'appel
+                if not hasattr(self.monday_tool, 'api_token') or not self.monday_tool.api_token:
+                    logger.info("💡 Monday.com non configuré - skip des updates")
+                else:
+                    updates_result = await self.monday_tool._arun(
+                        action="get_item_updates",
+                        item_id=task_info["task_id"]
+                    )
 
-                        if updates_result.get("success") and updates_result.get("updates"):
-                            # Chercher une update qui contient une description valide
-                            for update in updates_result["updates"][:5]:  # Maximum 5 updates récentes
-                                update_body = update.get("body", "").strip()
-                                if update_body and len(update_body) > 20:  # Description substantielle
-                                    # Nettoyer le HTML si présent
-                                    import re
-                                    clean_body = re.sub(r'<[^>]+>', '', update_body)
-                                    if clean_body and len(clean_body) > 20:
-                                        description = clean_body
-                                        logger.info(f"📝 Description trouvée dans update: {description[:100]}...")
-                                        break
-                except Exception as e:
-                    logger.warning(f"⚠️ Erreur récupération updates: {e}")
+                    if updates_result.get("success") and updates_result.get("updates"):
+                        import re
+                        # Récupérer TOUTES les updates pertinentes (pas seulement la première)
+                        for update in updates_result["updates"][:10]:  # Maximum 10 updates récentes
+                            update_body = update.get("body", "").strip()
+                            if update_body and len(update_body) > 15:  # Filtrer les updates trop courtes
+                                # Nettoyer le HTML si présent
+                                clean_body = re.sub(r'<[^>]+>', '', update_body).strip()
+                                if clean_body and len(clean_body) > 15:
+                                    # Ajouter le créateur si disponible
+                                    creator_name = update.get("creator", {}).get("name", "Utilisateur")
+                                    additional_context.append(f"[{creator_name}]: {clean_body}")
+                                    logger.info(f"📝 Update récupérée de {creator_name}: {clean_body[:80]}...")
+                        
+                        if additional_context:
+                            logger.info(f"✅ {len(additional_context)} update(s) récupérée(s) depuis Monday.com")
+                    else:
+                        logger.info("ℹ️ Aucune update trouvée dans Monday.com")
+            except Exception as e:
+                logger.warning(f"⚠️ Erreur récupération updates: {e}")
+
+            # ✅ FALLBACK 1: Si pas de description de base, utiliser la première update
+            if not description and additional_context:
+                description = additional_context[0]
+                additional_context = additional_context[1:]  # Retirer la première qu'on a utilisée
+                logger.info(f"📝 Description générée depuis première update: {description[:100]}...")
 
             # ✅ FALLBACK 2: Utiliser le titre de la tâche comme description minimale
             if not description and title:
@@ -586,6 +677,13 @@ class WebhookService:
                 description = "Description non disponible - Veuillez ajouter plus de détails dans Monday.com"
                 logger.warning("⚠️ Aucune description trouvée dans Monday.com après toutes les tentatives")
 
+            # ✅ ENRICHISSEMENT FINAL: Ajouter les commentaires/updates à la description
+            if additional_context:
+                # Ajouter une section séparée pour les commentaires
+                description += "\n\n--- Commentaires et précisions additionnelles ---\n"
+                description += "\n".join(additional_context)
+                logger.info(f"✅ Description enrichie avec {len(additional_context)} commentaire(s) Monday.com")
+
             logger.info(f"📄 Description finale: {description[:100]}{'...' if len(description) > 100 else ''}")
 
             # Rechercher la branche Git
@@ -596,7 +694,28 @@ class WebhookService:
             # Autres informations
             assignee = self._extract_column_value(item_data, "personne", "name")
             priority = self._extract_column_value(item_data, "priorite", "text", "medium")
-            repository_url = self._extract_column_value(item_data, "repo_url", "text") or ""
+            
+            # ✅ CORRECTION: Lire la colonne Repository URL configurée
+            from config.settings import get_settings
+            settings = get_settings()
+            repository_url = ""
+            
+            # Essayer d'abord avec l'ID de colonne configuré
+            if settings.monday_repository_url_column_id:
+                # Pour une colonne de type "link", essayer "url" et "text"
+                repository_url = (
+                    self._extract_column_value(item_data, settings.monday_repository_url_column_id, "url") or
+                    self._extract_column_value(item_data, settings.monday_repository_url_column_id, "text") or
+                    ""
+                )
+                if repository_url:
+                    logger.info(f"🔗 URL repository trouvée dans colonne configurée ({settings.monday_repository_url_column_id}): {repository_url}")
+            
+            # Fallback: essayer avec le nom générique
+            if not repository_url:
+                repository_url = self._extract_column_value(item_data, "repo_url", "text") or ""
+                if repository_url:
+                    logger.info(f"🔗 URL repository trouvée dans colonne 'repo_url': {repository_url}")
 
             # Préparer les données de base de la tâche
             base_task_data = {
@@ -656,9 +775,7 @@ class WebhookService:
                 branch_name=enriched_data["branch_name"],
                 repository_url=enriched_data["repository_url"],
                 priority=enriched_data["priority"],
-                assignee=enriched_data.get("assignee"),
-                files_to_modify=enriched_data.get("files_to_modify"),
-                created_at=datetime.now()
+                files_to_modify=enriched_data.get("files_to_modify")
             )
 
             logger.info(f"📋 Tâche créée: {task_request.title} (Branche: {task_request.branch_name})")
@@ -761,9 +878,7 @@ class WebhookService:
             branch_name=git_branch,
             repository_url=repository_url,
             priority=priority,
-            assignee=assignee,
-            files_to_modify=[],
-            created_at=datetime.now()
+            files_to_modify=[]
         )
         logger.info(f"📋 Requête de tâche de test créée: {task_request.title}")
         return task_request
@@ -796,8 +911,6 @@ class WebhookService:
             branch_name=self._generate_branch_name(f"fallback-{item_id}"),
             repository_url=getattr(self.settings, "default_repo_url", "") or "",
             priority=task_info.get("priority", "low"),  # Priorité basse pour les fallbacks
-            assignee=None,
-            created_at=datetime.now(),
             task_type="analysis"  # Utiliser un type valide pour les fallbacks
         )
 
@@ -889,8 +1002,9 @@ Intervention manuelle requise."""
 
             conn = await get_db_connection()
 
-            # Chercher des webhooks similaires traités dans les 2 dernières minutes
-            # On recherche par titre ET type d'événement (pour permettre des vraies mises à jour)
+            # Chercher des webhooks similaires traités dans les 5 dernières minutes
+            # ✅ AMÉLIORATION : Recherche par pulse_id (plus fiable que le titre)
+            # Fenêtre de 5 minutes pour éviter les doublons pendant tout le workflow
             similar_webhook = await conn.fetchrow("""
                 SELECT
                     webhook_events_id,
@@ -898,12 +1012,11 @@ Intervention manuelle requise."""
                     processing_status
                 FROM webhook_events
                 WHERE processing_status = 'processed'
-                AND received_at >= NOW() - INTERVAL '2 minutes'
-                AND payload::jsonb -> 'event' ->> 'pulseName' = $1
-                AND payload::jsonb -> 'event' ->> 'type' = $2
+                AND received_at >= NOW() - INTERVAL '5 minutes'
+                AND payload::jsonb -> 'event' ->> 'pulseId' = $1
                 ORDER BY received_at DESC
                 LIMIT 1
-            """, pulse_name, event_type)
+            """, str(pulse_id))
 
             await conn.close()
 

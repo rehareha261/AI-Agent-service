@@ -38,10 +38,13 @@ services:
       - "com.aiagent.environment=development"
 
   # ================================
-  # DATABASE - PostgreSQL
+  # DATABASE - PostgreSQL with pg_partman
   # ================================
   postgres:
-    image: postgres:15-alpine
+    build:
+      context: ./docker/postgres
+      dockerfile: Dockerfile
+    image: ai_agent_postgres:pg_partman
     container_name: ai_agent_postgres
     hostname: ai-agent-db
     ports:
@@ -53,7 +56,10 @@ services:
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./config/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+      # Scripts d'initialisation (exécutés dans l'ordre alphabétique)
+      - ./docker/postgres/init-scripts/01-enable-pg-partman.sql:/docker-entrypoint-initdb.d/01-enable-pg-partman.sql:ro
+      - ./config/init-db.sql:/docker-entrypoint-initdb.d/02-init-db.sql:ro
+      - ./docker/postgres/init-scripts/02-configure-webhook-events-partman.sql:/docker-entrypoint-initdb.d/03-configure-webhook-events-partman.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d ai_agent_admin"]
       interval: 30s
@@ -64,6 +70,7 @@ services:
       - ai_agent_network
     labels:
       - "com.aiagent.service=database"
+      - "com.aiagent.feature=pg_partman"
 
   # ================================
   # APPLICATION - FastAPI

@@ -178,7 +178,11 @@ async def quality_assurance_automation(state: GraphState) -> GraphState:
         
         # 8. Si des problèmes critiques, les signaler sans bloquer
         if qa_summary["critical_issues"] > 0:
-            logger.warning(f"⚠️ {qa_summary['critical_issues']} problèmes critiques détectés")
+            # ✅ AMÉLIORATION: Message plus clair indiquant que ce ne sont pas des erreurs bloquantes
+            if qa_summary["quality_gate_passed"]:
+                logger.warning(f"⚠️ {qa_summary['critical_issues']} avertissement(s) de linting détecté(s) (non-bloquants)")
+            else:
+                logger.warning(f"⚠️ {qa_summary['critical_issues']} problèmes critiques détectés")
             
             # Ajouter un rapport dans les résultats pour le nœud suivant
             critical_report = "\n".join([
@@ -187,7 +191,9 @@ async def quality_assurance_automation(state: GraphState) -> GraphState:
             
             if "qa_report" not in state["results"]:
                 state["results"]["qa_report"] = ""
-            state["results"]["qa_report"] += f"\n🚨 Problèmes critiques QA:\n{critical_report}\n"
+            
+            report_title = "📝 Avertissements QA" if qa_summary["quality_gate_passed"] else "🚨 Problèmes critiques QA"
+            state["results"]["qa_report"] += f"\n{report_title}:\n{critical_report}\n"
         
         return state
         
@@ -209,11 +215,28 @@ async def _detect_project_type(working_directory: str) -> Dict[str, Any]:
     }
     
     try:
-        # Vérifier les fichiers de configuration
+        # ✨ Vérifier les fichiers de configuration (UNIVERSEL - tous langages)
         config_files_to_check = [
+            # Python
             "setup.py", "pyproject.toml", "requirements.txt", "Pipfile",
-            ".flake8", "setup.cfg", "tox.ini", "pytest.ini",
-            ".pylintrc", ".pre-commit-config.yaml", "mypy.ini"
+            ".flake8", "setup.cfg", "tox.ini", "pytest.ini", ".pylintrc", "mypy.ini",
+            # JavaScript/Node.js
+            "package.json", "package-lock.json", "yarn.lock", "tsconfig.json",
+            ".eslintrc", ".eslintrc.json", ".prettierrc", "jest.config.js",
+            # Java
+            "pom.xml", "build.gradle", "settings.gradle", "gradle.properties",
+            # Go
+            "go.mod", "go.sum",
+            # Rust
+            "Cargo.toml", "Cargo.lock",
+            # PHP
+            "composer.json", "composer.lock", "phpunit.xml",
+            # Ruby
+            "Gemfile", "Gemfile.lock",
+            # C#/.NET
+            "*.csproj", "*.sln",
+            # Général
+            ".pre-commit-config.yaml", ".editorconfig", ".gitignore"
         ]
         
         for config_file in config_files_to_check:
@@ -221,41 +244,67 @@ async def _detect_project_type(working_directory: str) -> Dict[str, Any]:
             if os.path.exists(config_path):
                 project_info["config_files"][config_file] = config_path
         
-        # Détecter les frameworks
-        requirements_files = [
-            project_info["config_files"].get("requirements.txt"),
-            project_info["config_files"].get("pyproject.toml")
-        ]
-        
-        for req_file in requirements_files:
-            if req_file and os.path.exists(req_file):
-                with open(req_file, 'r') as f:
+        # ✨ Détecter les frameworks (UNIVERSEL)
+        # Rechercher dans TOUS les fichiers de config détectés
+        for config_file_path in project_info["config_files"].values():
+            try:
+                with open(config_file_path, 'r', encoding='utf-8', errors='ignore') as f:
                     content = f.read().lower()
                     
-                    # Détecter les frameworks courants
+                    # ✨ Frameworks UNIVERSELS (étendu, non exhaustif)
                     frameworks = {
-                        "django": "django",
-                        "flask": "flask", 
-                        "fastapi": "fastapi",
-                        "pytest": "pytest",
-                        "unittest": "unittest"
+                        # Python
+                        "django": "django", "flask": "flask", "fastapi": "fastapi",
+                        "pytest": "pytest", "unittest": "unittest",
+                        # JavaScript
+                        "react": "react", "vue": "vue", "angular": "angular",
+                        "express": "express", "next": "nextjs", "jest": "jest",
+                        # Java
+                        "spring": "spring", "junit": "junit", "hibernate": "hibernate",
+                        # PHP
+                        "laravel": "laravel", "symfony": "symfony", "phpunit": "phpunit",
+                        # Ruby
+                        "rails": "rails", "rspec": "rspec",
+                        # Go
+                        "gin": "gin", "echo": "echo",
                     }
                     
                     for framework, name in frameworks.items():
-                        if framework in content:
+                        if framework in content and name not in project_info["frameworks"]:
                             project_info["frameworks"].append(name)
+            except Exception as e:
+                logger.debug(f"Erreur lecture {config_file_path}: {e}")
         
-        # Vérifier les outils QA disponibles
-        qa_tools = ["pylint", "flake8", "black", "isort", "bandit", "mypy", "prospector"]
+        # ✨ Vérifier les outils QA disponibles (UNIVERSEL - étendu)
+        qa_tools = [
+            # Python
+            "ruff", "pylint", "flake8", "black", "isort", "bandit", "mypy", "prospector",
+            # JavaScript/TypeScript
+            "eslint", "prettier", "tslint",
+            # Java
+            "checkstyle", "pmd", "spotbugs",
+            # Go
+            "golint", "go vet",
+            # Rust
+            "clippy", "rustfmt",
+            # PHP
+            "phpcs", "phpstan",
+            # Général
+            "sonar"
+        ]
         
         for tool in qa_tools:
             try:
-                result = subprocess.run([tool, "--version"], 
+                # Gérer les commandes composées (ex: "go vet")
+                cmd = tool.split()
+                result = subprocess.run(cmd + ["--version"] if len(cmd) == 1 else ["-h"], 
                                       capture_output=True, 
                                       text=True, 
                                       timeout=5)
-                if result.returncode == 0:
-                    project_info["qa_tools_available"].append(tool)
+                if result.returncode == 0 or "usage" in result.stdout.lower() or "usage" in result.stderr.lower():
+                    if tool not in project_info["qa_tools_available"]:
+                        project_info["qa_tools_available"].append(tool)
+                    logger.debug(f"✅ Outil QA disponible: {tool}")
             except Exception:
                 continue
         
@@ -297,20 +346,25 @@ async def _run_quality_checks(working_directory: str, files: List[str], project_
     qa_results = {}
     available_tools = project_info.get("qa_tools_available", [])
     
-    # 1. Linting avec pylint
-    if "pylint" in available_tools and files:
+    # ✅ PRIORITÉ 1: Ruff (moderne, rapide, avec auto-fix)
+    if "ruff" in available_tools and files:
+        logger.info("🚀 Exécution de Ruff avec correction automatique...")
+        qa_results["ruff"] = await _run_ruff_with_autofix(working_directory, files)
+    
+    # 2. Linting avec pylint (si ruff pas disponible)
+    elif "pylint" in available_tools and files:
         qa_results["pylint"] = await _run_pylint(working_directory, files)
     
-    # 2. Style checking avec flake8
-    if "flake8" in available_tools and files:
+    # 3. Style checking avec flake8 (si ruff pas disponible)
+    if "flake8" in available_tools and files and "ruff" not in available_tools:
         qa_results["flake8"] = await _run_flake8(working_directory, files)
     
-    # 3. Formatage avec black
+    # 4. Formatage avec black
     if "black" in available_tools and files:
         qa_results["black"] = await _run_black_check(working_directory, files)
     
-    # 4. Import sorting avec isort
-    if "isort" in available_tools and files:
+    # 5. Import sorting avec isort (si ruff pas disponible)
+    if "isort" in available_tools and files and "ruff" not in available_tools:
         qa_results["isort"] = await _run_isort_check(working_directory, files)
     
     # 5. Sécurité avec bandit
@@ -322,6 +376,105 @@ async def _run_quality_checks(working_directory: str, files: List[str], project_
         qa_results["mypy"] = await _run_mypy(working_directory, files)
     
     return qa_results
+
+
+async def _run_ruff_with_autofix(working_directory: str, files: List[str]) -> Dict[str, Any]:
+    """
+    Exécute Ruff avec correction automatique des problèmes de style.
+    
+    Ruff est un linter Python moderne et ultra-rapide qui remplace:
+    - flake8 (linting)
+    - isort (tri des imports)  
+    - pydocstyle (docstrings)
+    - pyupgrade (modernisation du code)
+    
+    Et il peut corriger automatiquement la plupart des problèmes.
+    """
+    result = {
+        "tool": "ruff",
+        "passed": False,
+        "issues_count": 0,
+        "fixed_count": 0,
+        "critical_issues": 0,
+        "output": "",
+        "error": ""
+    }
+    
+    try:
+        # Étape 1: Appliquer les corrections automatiques
+        logger.info("🔧 Ruff: Application des corrections automatiques...")
+        fix_cmd = ["ruff", "check", "--fix", "--config", "ruff.toml", "."]
+        
+        fix_process = await asyncio.create_subprocess_exec(
+            *fix_cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            cwd=working_directory
+        )
+        
+        fix_stdout, fix_stderr = await fix_process.communicate()
+        fix_output = fix_stdout.decode() + fix_stderr.decode()
+        
+        # Compter les corrections appliquées
+        import re
+        fixed_matches = re.findall(r'(\d+)\s+(?:error|errors|fix|fixes)\s+(?:fixed|applied)', fix_output, re.IGNORECASE)
+        fixed_count = sum(int(m) for m in fixed_matches) if fixed_matches else 0
+        result["fixed_count"] = fixed_count
+        
+        if fixed_count > 0:
+            logger.info(f"✨ Ruff: {fixed_count} problème(s) corrigé(s) automatiquement")
+        
+        # Étape 2: Vérifier les problèmes restants
+        logger.info("🔍 Ruff: Vérification des problèmes restants...")
+        check_cmd = ["ruff", "check", "--config", "ruff.toml", "--output-format", "text", "."]
+        
+        check_process = await asyncio.create_subprocess_exec(
+            *check_cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            cwd=working_directory
+        )
+        
+        check_stdout, check_stderr = await check_process.communicate()
+        check_output = check_stdout.decode() + check_stderr.decode()
+        
+        result["output"] = check_output
+        
+        # Parser la sortie pour compter les problèmes
+        remaining_issues = len(re.findall(r':\d+:\d+:', check_output))
+        result["issues_count"] = remaining_issues
+        
+        # Compter les problèmes critiques (erreurs E et F)
+        critical_patterns = [r'\[E\d+\]', r'\[F\d+\]']
+        critical_count = sum(len(re.findall(pattern, check_output)) for pattern in critical_patterns)
+        result["critical_issues"] = critical_count
+        
+        # Déterminer le succès
+        # Succès si: pas d'erreurs critiques (warnings OK)
+        result["passed"] = critical_count == 0
+        
+        if remaining_issues == 0:
+            logger.info("✅ Ruff: Aucun problème détecté - code impeccable!")
+            result["output"] = "✅ Code conforme aux standards Ruff"
+        elif result["passed"]:
+            logger.info(f"✅ Ruff: {remaining_issues} avertissement(s) non-critique(s)")
+            result["output"] = f"✅ {remaining_issues} avertissement(s) mineur(s)\n" + result["output"][:500]
+        else:
+            logger.warning(f"⚠️ Ruff: {critical_count} problème(s) critique(s) restant(s)")
+            result["output"] = f"⚠️ {critical_count} problème(s) critique(s)\n" + result["output"][:500]
+        
+        return result
+        
+    except FileNotFoundError:
+        # ruff n'est pas installé
+        result["error"] = "Ruff n'est pas installé. Installez-le avec: pip install ruff"
+        logger.warning(result["error"])
+        return result
+        
+    except Exception as e:
+        result["error"] = f"Erreur lors de l'exécution de Ruff: {str(e)}"
+        logger.error(result["error"])
+        return result
 
 
 async def _run_basic_checks(working_directory: str, files: List[str]) -> Dict[str, Any]:

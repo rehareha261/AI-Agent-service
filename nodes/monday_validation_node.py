@@ -1,12 +1,49 @@
 """Nœud de validation humaine via Monday.com updates."""
 
 from typing import Dict, Any, Optional
+from datetime import datetime, timedelta
 from models.state import GraphState
+from models.schemas import HumanValidationRequest, PullRequestInfo
 from services.monday_validation_service import monday_validation_service
+from services.human_validation_service import validation_service as human_validation_service
 from utils.logger import get_logger
 from config.langsmith_config import langsmith_config
+import json
 
 logger = get_logger(__name__)
+
+
+def _convert_test_results_to_dict(test_results) -> Optional[Dict[str, Any]]:
+    """
+    Convertit test_results en dictionnaire compatible avec HumanValidationRequest.
+    
+    Args:
+        test_results: Peut être une liste ou un dictionnaire
+        
+    Returns:
+        Dictionnaire structuré ou None
+    """
+    if not test_results:
+        return None
+    
+    # Si déjà un dict, retourner tel quel
+    if isinstance(test_results, dict):
+        return test_results
+    
+    # Si c'est une liste, convertir en dict avec structure
+    if isinstance(test_results, list):
+        return {
+            "tests": test_results,
+            "count": len(test_results),
+            "summary": f"{len(test_results)} test(s) exécuté(s)",
+            "success": all(
+                test.get("success", False) if isinstance(test, dict) else False 
+                for test in test_results
+            )
+        }
+    
+    # Fallback: encapsuler dans un dict
+    return {"raw": str(test_results), "type": str(type(test_results))}
 
 
 async def monday_human_validation(state: GraphState) -> GraphState:
@@ -41,7 +78,7 @@ async def monday_human_validation(state: GraphState) -> GraphState:
         # ✅ CORRECTION: Vérifier la configuration Monday.com avant validation
         if not hasattr(monday_validation_service.monday_tool, 'api_token') or not monday_validation_service.monday_tool.api_token:
             logger.info("💡 Monday.com non configuré - validation humaine automatiquement approuvée")
-            state["results"]["human_decision"] = "approve"
+            state["results"]["human_decision"] = "approved"
             state["results"]["human_reply"] = "Auto-approuvé (Monday.com non configuré)"
             state["results"]["validation_skipped"] = "Configuration Monday.com manquante"
             return state
@@ -49,12 +86,174 @@ async def monday_human_validation(state: GraphState) -> GraphState:
         # 1. Préparer les résultats du workflow pour l'update
         workflow_results = _prepare_workflow_results(state)
         
-        # 2. Poster l'update de validation dans Monday.com
-        logger.info(f"📝 Posting update de validation pour item {state['task'].task_id}")
+        # Ajouter le validation_id aux workflow_results s'il existe déjà
+        if "validation_id" in state.get("results", {}):
+            workflow_results["validation_id"] = state["results"]["validation_id"]
+        
+        # 2. Créer la demande de validation en base de données AVANT de poster sur Monday.com
+        try:
+            validation_id = f"val_{state['task'].task_id}_{int(datetime.now().timestamp())}"
+            
+            # Préparer les informations de PR
+            pr_info_obj = None
+            pr_info_dict = workflow_results.get("pr_info") or state.get("results", {}).get("pr_info")
+            if pr_info_dict:
+                pr_info_obj = PullRequestInfo(
+                    number=pr_info_dict.get("number", 0) if isinstance(pr_info_dict, dict) else getattr(pr_info_dict, "number", 0),
+                    title=pr_info_dict.get("title", "") if isinstance(pr_info_dict, dict) else getattr(pr_info_dict, "title", ""),
+                    url=pr_info_dict.get("url", "") if isinstance(pr_info_dict, dict) else getattr(pr_info_dict, "url", ""),
+                    branch=pr_info_dict.get("branch", "") if isinstance(pr_info_dict, dict) else getattr(pr_info_dict, "branch", ""),
+                    base_branch=pr_info_dict.get("base_branch", "main") if isinstance(pr_info_dict, dict) else getattr(pr_info_dict, "base_branch", "main"),
+                    status=pr_info_dict.get("status", "open") if isinstance(pr_info_dict, dict) else getattr(pr_info_dict, "status", "open"),
+                    created_at=datetime.now()
+                )
+            
+            # Récupérer le code généré depuis modified_files
+            modified_files_raw = workflow_results.get("modified_files", [])
+            generated_code = {}
+            code_changes = state.get("results", {}).get("code_changes", {})
+            if code_changes:
+                generated_code = code_changes
+            
+            # ✅ CORRECTION: S'assurer que files_modified est toujours une liste de strings
+            # Si modified_files est un dict (code_changes), extraire les clés
+            if isinstance(modified_files_raw, dict):
+                modified_files = list(modified_files_raw.keys())
+                logger.info(f"✅ Conversion dict -> list pour files_modified: {len(modified_files)} fichiers")
+            elif isinstance(modified_files_raw, list):
+                modified_files = modified_files_raw
+            else:
+                # Fallback pour types inattendus
+                modified_files = []
+                logger.warning(f"⚠️ Type inattendu pour modified_files: {type(modified_files_raw)}")
+            
+            # ✅ CORRECTION ERREUR 1: Convertir generated_code en JSON string pour la DB
+            # La base de données attend un string JSON, pas un dict Python
+            generated_code_dict = generated_code if generated_code else {"summary": "Code généré - voir fichiers modifiés"}
+            generated_code_str = json.dumps(
+                generated_code_dict,
+                ensure_ascii=False,
+                indent=2
+            )
+            logger.info(f"✅ Conversion generated_code dict -> JSON string ({len(generated_code_str)} caractères)")
+            
+            # ✅ CORRECTION SIMILAIRE: Convertir test_results en JSON string pour la DB
+            test_results_dict = _convert_test_results_to_dict(workflow_results.get("test_results"))
+            test_results_str = json.dumps(
+                test_results_dict if test_results_dict else {},
+                ensure_ascii=False,
+                indent=2
+            )
+            logger.info(f"✅ Conversion test_results dict -> JSON string ({len(test_results_str)} caractères)")
+            
+            # ✅ CORRECTION PR_INFO: Convertir pr_info en JSON string pour la DB
+            if pr_info_obj:
+                # Convertir l'objet PullRequestInfo en JSON string
+                pr_info_str = json.dumps(
+                    pr_info_obj.model_dump() if hasattr(pr_info_obj, 'model_dump') else pr_info_obj.dict(),
+                    ensure_ascii=False,
+                    indent=2,
+                    default=str  # Pour gérer les datetime
+                )
+                logger.info(f"✅ Conversion pr_info object -> JSON string ({len(pr_info_str)} caractères)")
+            else:
+                pr_info_str = None
+            
+            # Créer la demande de validation
+            # ✅ COHÉRENCE: task_id dans HumanValidationRequest = Monday item ID (pour affichage UI)
+            display_task_id = str(state["task"].monday_item_id) if hasattr(state["task"], 'monday_item_id') and state["task"].monday_item_id else str(state["task"].task_id)
+            
+            validation_request = HumanValidationRequest(
+                validation_id=validation_id,
+                workflow_id=state.get("workflow_id", ""),
+                task_id=display_task_id,  # Monday item ID pour l'affichage UI
+                task_title=state["task"].title,
+                generated_code=generated_code_str,  # ✅ STRING au lieu de DICT
+                code_summary=f"Implémentation de: {state['task'].title}",
+                files_modified=modified_files,
+                original_request=state["task"].description or state["task"].title,
+                implementation_notes="\n".join(workflow_results.get("ai_messages", [])[-5:]),  # 5 derniers messages
+                test_results=test_results_str,  # ✅ STRING au lieu de DICT
+                pr_info=pr_info_str,  # ✅ STRING au lieu de OBJET
+                created_at=datetime.now(),
+                expires_at=datetime.now() + timedelta(minutes=10),  # Expire dans 10 minutes
+                requested_by="ai_agent"
+            )
+            
+            # Initialiser le service si nécessaire
+            if not human_validation_service.db_pool:
+                await human_validation_service.init_db_pool()
+            
+            # ✅ NOMENCLATURE CLARIFIÉE:
+            # - display_task_id (ci-dessus) = Monday item ID (5028673529) pour affichage UI
+            # - task_id_int (ci-dessous) = tasks_id de la DB (36) pour foreign key
+            # La table human_validations.task_id référence tasks.tasks_id, PAS tasks.monday_item_id
+            task_id_int = state.get("db_task_id")
+            
+            # ✅ NOUVEAU: Fallback pour récupérer task_id depuis la DB si manquant dans state
+            if not task_id_int:
+                logger.warning(f"⚠️ db_task_id manquant dans state - tentative récupération depuis DB")
+                
+                # Essayer de récupérer depuis monday_item_id
+                monday_item_id = state["task"].monday_item_id if hasattr(state["task"], 'monday_item_id') else state["task"].task_id
+                
+                if human_validation_service.db_pool:
+                    try:
+                        async with human_validation_service.db_pool.acquire() as conn:
+                            task_id_int = await conn.fetchval("""
+                                SELECT tasks_id FROM tasks WHERE monday_item_id = $1
+                            """, int(monday_item_id))
+                            
+                            if task_id_int:
+                                logger.info(f"✅ task_id récupéré depuis DB: {task_id_int} (monday_item_id={monday_item_id})")
+                                # Mettre à jour state pour les prochaines fois
+                                state["db_task_id"] = task_id_int
+                            else:
+                                logger.error(f"❌ Aucune tâche trouvée pour monday_item_id={monday_item_id}")
+                    except Exception as e:
+                        logger.error(f"❌ Erreur récupération task_id depuis DB: {e}")
+                        
+            if not task_id_int:
+                logger.error(f"❌ Impossible de déterminer task_id - skip sauvegarde validation en DB")
+                # Ne pas bloquer le workflow, continuer sans sauvegarder en DB
+                task_id_int = None  # On continuera sans sauvegarder
+            
+            task_run_id_int = state.get("db_run_id")
+            # ✅ CORRECTION: Récupérer current_step_id depuis le state, pas depuis results
+            # Le decorator persistence_decorator stocke current_step_id directement dans state
+            run_step_id = state.get("current_step_id") or state.get("db_step_id")
+            
+            # ✅ CORRECTION: Ne sauvegarder en DB que si task_id_int est valide
+            if task_id_int:
+                success = await human_validation_service.create_validation_request(
+                    validation_request=validation_request,
+                    task_id=task_id_int,
+                    task_run_id=task_run_id_int,
+                    run_step_id=run_step_id
+                )
+                
+                if success:
+                    logger.info(f"✅ Validation {validation_id} créée en base de données")
+                    state["results"]["validation_id"] = validation_id
+                    workflow_results["validation_id"] = validation_id  # ✅ NOUVEAU: Ajouter aux workflow_results
+                    state["results"]["ai_messages"].append(f"✅ Validation {validation_id} sauvegardée en DB")
+                else:
+                    logger.warning(f"⚠️ Échec sauvegarde validation {validation_id} en DB - continuation du workflow")
+            else:
+                logger.warning(f"⚠️ task_id manquant - skip sauvegarde validation en DB, workflow continue")
+                
+        except Exception as db_error:
+            logger.error(f"❌ Erreur lors de la création de validation en DB: {db_error}")
+            state["results"]["ai_messages"].append(f"⚠️ Erreur DB validation: {str(db_error)}")
+        
+        # 3. Poster l'update de validation dans Monday.com
+        # ✅ CORRECTION: Utiliser monday_item_id au lieu de task_id pour les appels Monday.com
+        monday_item_id = str(state["task"].monday_item_id) if state["task"].monday_item_id else state["task"].task_id
+        logger.info(f"📝 Posting update de validation pour item Monday.com {monday_item_id}")
         
         try:
             update_id = await monday_validation_service.post_validation_update(
-                item_id=state["task"].task_id,
+                item_id=monday_item_id,
                 workflow_results=workflow_results
             )
             
@@ -66,21 +265,24 @@ async def monday_human_validation(state: GraphState) -> GraphState:
         except Exception as post_error:
             logger.error(f"❌ Erreur lors du post validation update: {str(post_error)}")
             # En cas d'erreur, continuer avec un update_id par défaut
-            update_id = f"failed_update_{state['task'].task_id}"
+            update_id = f"failed_update_{monday_item_id}"
             state["results"]["validation_error"] = str(post_error)
             state["results"]["ai_messages"].append(f"❌ Erreur validation Monday.com: {str(post_error)}")
         
         state["results"]["validation_update_id"] = update_id
         state["results"]["ai_messages"].append(f"✅ Update de validation postée: {update_id}")
         
-        # 3. Tracer avec LangSmith
+        # 4. Tracer avec LangSmith
         if langsmith_config.client:
             try:
+                # ✅ COHÉRENCE: Utiliser monday_item_id pour l'affichage
+                display_item_id = str(state["task"].monday_item_id) if hasattr(state["task"], 'monday_item_id') and state["task"].monday_item_id else str(state["task"].task_id)
+                
                 langsmith_config.client.create_run(
                     name="monday_validation_update_posted",
                     run_type="tool",
                     inputs={
-                        "item_id": state["task"].task_id,
+                        "item_id": display_item_id,  # Monday item ID
                         "task_title": state["task"].title,
                         "update_id": update_id,
                         "workflow_results": workflow_results
@@ -98,7 +300,7 @@ async def monday_human_validation(state: GraphState) -> GraphState:
             except Exception as e:
                 logger.warning(f"⚠️ Erreur LangSmith tracing: {e}")
         
-        # 4. Attendre la réponse humaine
+        # 5. Attendre la réponse humaine
         logger.info(f"⏳ Attente de reply humaine sur update {update_id}...")
         state["results"]["ai_messages"].append("⏳ En attente de reply humaine dans Monday.com...")
         
@@ -150,30 +352,78 @@ async def monday_human_validation(state: GraphState) -> GraphState:
                 }
                 state["results"]["ai_messages"].append("⚠️ Validation expirée - update Monday.com seulement")
         else:
-            # 5. Traiter la réponse de validation
+            # 6. Traiter la réponse de validation et sauvegarder en DB
             state["results"]["validation_response"] = validation_response
-            state["results"]["human_validation_status"] = validation_response.status.value
             
-            if validation_response.status.value == "approve":
+            # ✅ CORRECTION: Gérer les différents formats de status (string vs enum)
+            status_value = validation_response.status.value if hasattr(validation_response.status, 'value') else str(validation_response.status)
+            state["results"]["human_validation_status"] = status_value
+            
+            logger.info(f"📊 Statut de validation reçu: '{status_value}' (type: {type(validation_response.status)})")
+            
+            # ✅ AMÉLIORATION: Mapper tous les cas possibles de statut
+            if status_value in ["approve", "approved", "APPROVED"]:
                 logger.info("✅ Code approuvé par l'humain via Monday.com")
                 state["results"]["ai_messages"].append("✅ Code approuvé - Préparation du merge...")
                 state["results"]["should_merge"] = True
-                state["results"]["human_decision"] = "approve"
+                state["results"]["human_decision"] = "approved"
                 
-            elif validation_response.status.value == "rejected":
+            elif status_value in ["reject", "rejected", "REJECTED", "debug"]:
                 logger.info("🔧 Debug demandé par l'humain via Monday.com")
                 state["results"]["ai_messages"].append(f"🔧 Debug demandé: {validation_response.comments}")
                 state["results"]["should_merge"] = False
-                state["results"]["human_decision"] = "debug"
+                state["results"]["human_decision"] = "rejected"
                 state["results"]["debug_request"] = validation_response.comments
                 
-            else:
-                logger.warning("⚠️ Validation expirée ou annulée")
-                state["results"]["ai_messages"].append("⚠️ Validation expirée - Workflow arrêté")
+            elif status_value in ["expired", "EXPIRED", "timeout"]:
+                logger.warning("⏰ Validation expirée - timeout atteint")
+                state["results"]["ai_messages"].append("⏰ Validation expirée - update Monday.com seulement")
                 state["results"]["should_merge"] = False
                 state["results"]["human_decision"] = "timeout"
                 
-        # 6. Tracer la réponse finale
+            else:
+                logger.warning(f"⚠️ Statut de validation inconnu: {status_value}")
+                state["results"]["ai_messages"].append(f"⚠️ Statut inconnu: {status_value} - Workflow arrêté")
+                state["results"]["should_merge"] = False
+                state["results"]["human_decision"] = "error"
+            
+            # 7. Sauvegarder la réponse de validation en base de données
+            try:
+                # ✅ CORRECTION ERREUR 2: Utiliser le validation_id DB stocké dans le state, pas celui de Monday
+                db_validation_id = state.get("results", {}).get("validation_id")
+                
+                if not db_validation_id:
+                    logger.info("ℹ️ Pas de validation_id en DB - la validation n'a pas été sauvegardée initialement, skip sauvegarde réponse")
+                    # Ce n'est pas une erreur - cela arrive quand task_id_int était None
+                elif validation_response:
+                    # Initialiser le service si nécessaire
+                    if not human_validation_service.db_pool:
+                        await human_validation_service.init_db_pool()
+                    
+                    # ✅ CORRECTION: Créer une copie de la réponse avec le bon validation_id DB
+                    # validation_response.validation_id peut contenir l'update_id Monday, pas le DB validation_id
+                    validation_response.validation_id = db_validation_id
+                    
+                    # Sauvegarder la réponse
+                    response_saved = await human_validation_service.submit_validation_response(
+                        validation_id=db_validation_id,
+                        response=validation_response
+                    )
+                    
+                    if response_saved:
+                        logger.info(f"✅ Réponse validation {db_validation_id} sauvegardée en DB")
+                        state["results"]["ai_messages"].append("✅ Réponse validation sauvegardée en DB")
+                    else:
+                        logger.warning(f"⚠️ Échec sauvegarde réponse validation en DB")
+                else:
+                    logger.warning("⚠️ Aucune réponse de validation à sauvegarder")
+                        
+            except Exception as db_error:
+                logger.error(f"❌ Erreur sauvegarde réponse validation en DB: {db_error}")
+                # Ne pas bloquer le workflow pour une erreur de persistence
+                state["results"]["ai_messages"].append(f"⚠️ Erreur DB réponse: {str(db_error)}")
+                
+        # 8. Tracer la réponse finale
         if langsmith_config.client and validation_response:
             try:
                 langsmith_config.client.create_run(

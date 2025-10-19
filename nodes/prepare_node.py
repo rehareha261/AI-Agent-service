@@ -8,6 +8,7 @@ Ce module prépare l'environnement de travail pour les tâches :
 - Configuration de l'espace de travail
 """
 
+import os
 import re
 from typing import Optional, Any
 from models.state import GraphState
@@ -201,7 +202,9 @@ async def prepare_environment(state: GraphState) -> GraphState:
         if not repo_url:
             logger.info(f"🔍 Tentative d'extraction URL GitHub depuis les updates Monday.com...")
             try:
-                repo_url = await _extract_repository_url_from_monday_updates(str(state["task"].task_id))
+                # ✅ CORRECTION: Utiliser monday_item_id pour les appels Monday.com API
+                monday_item_id = str(state["task"].monday_item_id) if state["task"].monday_item_id else str(state["task"].task_id)
+                repo_url = await _extract_repository_url_from_monday_updates(monday_item_id)
             except Exception as e:
                 logger.warning(f"⚠️ Erreur lors de l'extraction URL repository depuis Monday.com: {e}")
                 repo_url = ""
@@ -293,12 +296,21 @@ async def prepare_environment(state: GraphState) -> GraphState:
             
             # ✅ CORRECTION CRITIQUE: Mettre à jour la tâche elle-même
             if hasattr(state["task"], '__dict__'):
-                state["task"].git_branch = branch_name
+                state["task"].branch_name = branch_name
                 state["task"].repository_url = repo_url
             
             # ✅ NOUVELLE PROTECTION: Marquer le répertoire comme persistant
             state["results"]["working_directory_persistent"] = True
             state["results"]["environment_ready"] = True
+            
+            # ✅ CORRECTION CELERY: S'assurer que db_task_id et db_run_id sont propagés
+            if "db_task_id" in state and state["db_task_id"] is not None:
+                state["results"]["db_task_id"] = state["db_task_id"]
+                logger.info(f"✅ db_task_id propagé: {state['db_task_id']}")
+            
+            if "db_run_id" in state and state["db_run_id"] is not None:
+                state["results"]["db_run_id"] = state["db_run_id"]
+                logger.info(f"✅ db_run_id propagé: {state['db_run_id']}")
 
             logger.info(f"✅ Environnement préparé avec succès: {working_dir}")
             state["results"]["ai_messages"].append(f"✅ Environnement configuré: {working_dir}")
@@ -357,7 +369,7 @@ def _handle_test_task(state: GraphState) -> GraphState:
         success=True,
         operation="test_environment_setup",
         message="Environnement de test simulé créé avec succès",
-        branch_name=state["task"].git_branch or state["task"].branch_name
+        branch_name=state["task"].branch_name
     )
     
     # Mettre à jour l'état avec les informations simulées
@@ -396,15 +408,20 @@ def _resolve_branch_name(task: Any, workflow_id: Optional[str] = None) -> str:
     from datetime import datetime
     from typing import Optional
     
-    # Si une branche est déjà définie, la valider et la retourner
+    # ✅ CORRECTION CRITIQUE: Ne pas réutiliser les branches protégées (main, master, develop)
+    # Toujours générer une nouvelle branche feature pour chaque run
+    protected_branches = ['main', 'master', 'develop', 'dev', 'production', 'prod', 'staging']
+    
     existing_branch = getattr(task, 'git_branch', None) or getattr(task, 'branch_name', None)
-    if existing_branch:
+    if existing_branch and existing_branch.lower() not in protected_branches:
         validated_branch = _validate_and_sanitize_branch_name(existing_branch)
-        if validated_branch:
+        if validated_branch and validated_branch.lower() not in protected_branches:
             logger.info(f"🌿 Branche existante validée: {validated_branch}")
             return validated_branch
         else:
-            logger.warning(f"⚠️ Branche invalide '{existing_branch}', génération automatique...")
+            logger.warning(f"⚠️ Branche '{existing_branch}' invalide ou protégée, génération automatique...")
+    elif existing_branch and existing_branch.lower() in protected_branches:
+        logger.warning(f"⚠️ Branche protégée détectée ('{existing_branch}'), génération d'une nouvelle branche feature...")
     
     # Génération automatique intelligente
     logger.info("🌿 Génération automatique du nom de branche...")

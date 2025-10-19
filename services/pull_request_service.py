@@ -8,7 +8,7 @@ avec gestion d'erreurs, retry, et persistence des états.
 import asyncio
 import os
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
 from enum import Enum
@@ -295,7 +295,7 @@ class PullRequestService:
                 branch=branch_name,
                 base_branch="main",
                 status="open",
-                created_at=datetime.now()
+                created_at=datetime.now(timezone.utc)
             )
             
             return PROperationResult(success=True, pr_info=pr_info)
@@ -334,18 +334,41 @@ class PullRequestService:
     def _extract_branch_name(self, state: Dict[str, Any]) -> Optional[str]:
         """Extrait le nom de branche depuis l'état."""
         
-        # Source 1: git_result
-        git_result = state.get("results", {}).get("git_result")
+        # ✅ CORRECTION: Ajouter plus de sources pour trouver le nom de branche
+        
+        # Source 1: git_branch dans results (le plus courant)
+        results = state.get("results", {})
+        if "git_branch" in results and results["git_branch"]:
+            return results["git_branch"]
+        
+        # Source 2: git_result.branch_name
+        git_result = results.get("git_result")
         if git_result:
-            if hasattr(git_result, 'branch_name'):
+            if hasattr(git_result, 'branch'):
+                return git_result.branch
+            elif hasattr(git_result, 'branch_name'):
                 return git_result.branch_name
             elif isinstance(git_result, dict):
-                return git_result.get('branch_name')
+                if 'branch' in git_result:
+                    return git_result['branch']
+                elif 'branch_name' in git_result:
+                    return git_result['branch_name']
         
-        # Source 2: prepare_result
-        prepare_result = state.get("results", {}).get("prepare_result", {})
+        # Source 3: prepare_result
+        prepare_result = results.get("prepare_result", {})
         if isinstance(prepare_result, dict):
-            return prepare_result.get("branch_name")
+            if "branch_name" in prepare_result:
+                return prepare_result["branch_name"]
+            elif "branch" in prepare_result:
+                return prepare_result["branch"]
+        
+        # Source 4: task.branch (fallback)
+        task = state.get("task")
+        if task and hasattr(task, 'branch') and task.branch:
+            return task.branch
+        
+        self.logger.warning("⚠️ Impossible d'extraire le nom de branche depuis l'état")
+        self.logger.debug(f"🔍 Keys disponibles dans results: {list(results.keys())}")
         
         return None
     

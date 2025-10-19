@@ -1,0 +1,46 @@
+╔════════════════════════════════════════════════════════════════════╗
+║              ✅ CORRECTIONS TERMINÉES - WORKFLOW UPDATE            ║
+╚════════════════════════════════════════════════════════════════════╝
+
+PROBLÈME IDENTIFIÉ:
+  La table task_update_triggers n'existait pas → webhooks updates ignorés
+
+CORRECTIONS APPLIQUÉES:
+  ✅ 1. Migration SQL corrigée et appliquée (FK webhook_id)
+  ✅ 2. Table task_update_triggers créée (15 colonnes)
+  ✅ 3. Colonne triggered_by_update_id ajoutée à task_runs
+  ✅ 4. Logs de debugging ajoutés (🔔 WEBHOOK UPDATE REÇU)
+  ✅ 5. Tests de vérification: 5/5 passés
+
+════════════════════════════════════════════════════════════════════
+
+📋 ACTIONS REQUISES (3 étapes):
+
+1️⃣  REDÉMARRER FASTAPI
+    pkill -f "uvicorn main:app"
+    uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+2️⃣  CONFIGURER WEBHOOK MONDAY.COM
+    → Aller sur Monday.com → Integrations → Webhooks
+    → Cocher: create_update et create_reply
+    → Sauvegarder
+
+3️⃣  TESTER
+    python3 test_update_manual.py
+    OU poster un commentaire dans une tâche terminée Monday.com
+
+════════════════════════════════════════════════════════════════════
+
+📊 RÉSULTAT ATTENDU:
+    🔔 WEBHOOK UPDATE REÇU: pulse_id=X, text='...'
+    🔍 Tâche terminée - analyse du commentaire
+    📊 Analyse update: type=new_request, confidence=0.95
+    🚀 Déclenchement d'un nouveau workflow
+    ✅ Nouveau task_run créé
+
+════════════════════════════════════════════════════════════════════
+
+📁 Documentation complète: CORRECTIONS_APPLIQUEES.md
+🔍 Diagnostic si problème: DIAGNOSTIC_ET_CORRECTIONS.md
+
+Statut: 🟢 PRÊT POUR DÉPLOIEMENT

@@ -50,8 +50,9 @@ def with_persistence(node_name: str):
                             input_data={"node_input": task_dict}
                         )
 
-                        # Ajouter les IDs à l'état pour les nœuds enfants
-                        state["current_step_id"] = step_id
+                        # ✅ CORRECTION: Utiliser db_step_id pour cohérence avec db_task_id et db_run_id
+                        state["db_step_id"] = step_id
+                        state["current_step_id"] = step_id  # Garder pour compatibilité
                     except Exception as step_error:
                         logger.warning(f"⚠️ Erreur création step pour {node_name}: {step_error}")
                         logger.warning(f"⚠️ Nœud {node_name} continuera sans persistence")
@@ -203,21 +204,43 @@ def log_test_results_decorator(func: Callable) -> Callable:
             test_results = result_state["results"]["test_results"]
 
             try:
-                # Extraire les données des tests
-                if isinstance(test_results, dict):
-                    passed = test_results.get("success", False)
-                    total_tests = test_results.get("total_tests", 0)
-                    passed_tests = test_results.get("passed_tests", 0)
-                    failed_tests = test_results.get("failed_tests", 0)
-
-                    await db_persistence.log_test_results(
-                        task_run_id, passed, "passed" if passed else "failed",
-                        total_tests, passed_tests, failed_tests,
-                        coverage_percentage=test_results.get("coverage", None),
-                        pytest_report=test_results
-                    )
+                # ✅ CORRECTION: Gérer à la fois les listes et les dictionnaires
+                results_to_log = []
+                
+                if isinstance(test_results, list):
+                    # Si c'est une liste, prendre le dernier résultat (le plus récent)
+                    if test_results:
+                        results_to_log = [test_results[-1]]
+                elif isinstance(test_results, dict):
+                    # Si c'est un dictionnaire, le traiter directement
+                    results_to_log = [test_results]
+                
+                # Logger chaque résultat
+                for test_result in results_to_log:
+                    if not isinstance(test_result, dict):
+                        continue
+                        
+                    passed = test_result.get("success", False)
+                    total_tests = test_result.get("total_tests", 0)
+                    passed_tests = test_result.get("passed_tests", 0)
+                    failed_tests = test_result.get("failed_tests", 0)
+                    
+                    # ✅ AMÉLIORATION: Ne logger que si il y a eu de vrais tests exécutés
+                    # ou si c'est un échec explicite
+                    if total_tests > 0 or not passed:
+                        await db_persistence.log_test_results(
+                            task_run_id, passed, "passed" if passed else "failed",
+                            total_tests, passed_tests, failed_tests,
+                            coverage_percentage=test_result.get("coverage", None),
+                            pytest_report=test_result,
+                            duration_seconds=test_result.get("duration_seconds", None)
+                        )
+                        logger.info(f"✅ Résultats tests loggés en DB: passed={passed}, total={total_tests}")
+                    else:
+                        logger.debug(f"⏭️ Pas de tests réels à logger (validation automatique)")
+                        
             except Exception as e:
-                logger.warning(f"⚠️ Erreur logging résultats tests: {e}")
+                logger.warning(f"⚠️ Erreur logging résultats tests: {e}", exc_info=True)
 
         return result_state
 

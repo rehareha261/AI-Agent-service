@@ -481,3 +481,1771 @@ Traceback (most recent call last):
     raise WorkerLostError(
 billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 0.
 """
+[2025-10-02 11:50:29] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-02T08:50:29.784548Z"}
+[2025-10-02 11:50:29] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-02T08:50:29.785327Z"}
+[2025-10-02 11:50:29] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-02T08:50:29.785507Z"}
+[2025-10-02 11:50:29] INFO     celery@MacBookPro ready.
+[2025-10-02 11:50:54] WARNING  {"event": "\u2705 Persistence ferm\u00e9e", "level": "info", "timestamp": "2025-10-02T08:50:54.938168Z"}
+[2025-10-02 11:50:54] WARNING  {"event": "\u2705 Monitoring finalis\u00e9", "level": "info", "timestamp": "2025-10-02T08:50:54.939999Z"}
+[2025-10-02 11:57:52] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-02T08:57:52.855621Z"}
+[2025-10-02 11:57:52] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-02T08:57:52.858677Z"}
+[2025-10-02 11:57:52] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-02T08:57:52.858926Z"}
+[2025-10-02 11:57:52] INFO     celery@MacBookPro ready.
+[2025-10-02 11:58:37] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-02T08:58:37.573492Z"}
+[2025-10-02 12:02:51] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-02T09:02:51.605020Z"}
+[2025-10-02 12:02:51] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-02T09:02:51.605819Z"}
+[2025-10-02 12:02:51] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-02T09:02:51.605963Z"}
+[2025-10-02 12:02:51] INFO     celery@MacBookPro ready.
+[2025-10-02 12:03:08] INFO     Task ai_agent_background.process_monday_webhook[2178e237-2b17-4aac-8cac-c2513fc88a25] received
+[2025-10-02 12:03:11] INFO     Task ai_agent_background.execute_workflow[179c1ba4-9792-4026-8fff-e0b30a82fe67] received
+[2025-10-02 12:04:40] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-02T09:04:40.926623Z"}
+[2025-10-02 12:12:04] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-02T09:12:04.938228Z"}
+[2025-10-02 12:12:04] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-02T09:12:04.938874Z"}
+[2025-10-02 12:12:04] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-02T09:12:04.938987Z"}
+[2025-10-02 12:12:04] INFO     celery@MacBookPro ready.
+[2025-10-02 12:13:09] INFO     Task ai_agent_background.process_monday_webhook[01d575bc-2b9e-4a17-837f-fa604482d788] received
+[2025-10-02 12:13:12] INFO     Task ai_agent_background.execute_workflow[e118b94f-639e-48b3-adae-8d36d2cf2922] received
+[2025-10-02 12:13:52] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-02T09:13:52.107375Z"}
+[2025-10-02 12:17:15] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-02T09:17:15.521112Z"}
+[2025-10-02 12:17:15] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-02T09:17:15.521889Z"}
+[2025-10-02 12:17:15] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-02T09:17:15.521972Z"}
+[2025-10-02 12:17:15] INFO     celery@MacBookPro ready.
+[2025-10-02 12:17:17] INFO     Task ai_agent_background.process_monday_webhook[ae8fc7dd-9a89-4420-a525-4db111326774] received
+[2025-10-02 12:17:20] INFO     Task ai_agent_background.execute_workflow[36583362-ba88-4295-8119-5bd3d6b3825d] received
+[2025-10-02 12:18:18] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-02T09:18:18.212936Z"}
+[2025-10-02 12:18:19] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-02 12:41:16] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-02T09:41:16.115935Z"}
+[2025-10-02 12:41:16] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-02T09:41:16.116649Z"}
+[2025-10-02 12:41:16] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-02T09:41:16.116775Z"}
+[2025-10-02 12:41:16] INFO     celery@MacBookPro ready.
+[2025-10-02 12:41:20] INFO     Task ai_agent_background.process_monday_webhook[b8c8d5f6-085d-4280-8c62-69771f713635] received
+[2025-10-02 12:41:23] INFO     Task ai_agent_background.execute_workflow[11d3ac80-5654-4c31-a0bd-30e9fa411de8] received
+[2025-10-02 12:43:59] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-02T09:43:59.332734Z"}
+[2025-10-02 12:44:00] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-02 12:58:18] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-02T09:58:18.878638Z"}
+[2025-10-02 12:58:18] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-02T09:58:18.879464Z"}
+[2025-10-02 12:58:18] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-02T09:58:18.879574Z"}
+[2025-10-02 12:58:18] INFO     celery@MacBookPro ready.
+[2025-10-02 12:58:47] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-02T09:58:47.171333Z"}
+[2025-10-02 12:59:37] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-02T09:59:37.469459Z"}
+[2025-10-02 12:59:37] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-02T09:59:37.469733Z"}
+[2025-10-02 12:59:37] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-02T09:59:37.469821Z"}
+[2025-10-02 12:59:37] INFO     celery@MacBookPro ready.
+[2025-10-02 12:59:40] INFO     Task ai_agent_background.execute_workflow[18439212-e04f-4b4b-832b-735cbe1c7dc2] received
+[2025-10-02 12:59:42] INFO     Task ai_agent_background.process_monday_webhook[91813b93-2886-45ec-badc-a3da9bfc5de0] received
+[2025-10-02 13:01:09] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-02T10:01:09.150008Z"}
+[2025-10-02 13:01:10] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-02 16:04:19] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-02T13:04:19.620127Z"}
+[2025-10-02 16:04:19] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-02T13:04:19.620727Z"}
+[2025-10-02 16:04:19] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-02T13:04:19.620859Z"}
+[2025-10-02 16:04:19] INFO     celery@MacBookPro ready.
+[2025-10-02 16:04:19] INFO     Task ai_agent_background.execute_workflow[18439212-e04f-4b4b-832b-735cbe1c7dc2] received
+[2025-10-02 16:04:44] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-02T13:04:44.472212Z"}
+[2025-10-02 16:04:44] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 0.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 0.
+"""
+[2025-10-02 16:05:24] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-02T13:05:24.403960Z"}
+[2025-10-02 16:05:24] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-02T13:05:24.404480Z"}
+[2025-10-02 16:05:24] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-02T13:05:24.404558Z"}
+[2025-10-02 16:05:24] INFO     celery@MacBookPro ready.
+[2025-10-02 16:05:29] INFO     Task ai_agent_background.process_monday_webhook[f2c34bc5-054c-4759-b947-8c776fde422f] received
+[2025-10-02 16:05:34] INFO     Task ai_agent_background.execute_workflow[f1cd90c2-bfbe-46fa-b810-ccb2a7690b25] received
+[2025-10-02 16:06:57] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-02T13:06:57.856592Z"}
+[2025-10-02 16:06:59] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-02 16:30:23] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-02T13:30:23.430214Z"}
+[2025-10-02 16:30:23] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-02T13:30:23.431013Z"}
+[2025-10-02 16:30:23] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-02T13:30:23.431199Z"}
+[2025-10-02 16:30:23] INFO     celery@MacBookPro ready.
+[2025-10-02 16:30:26] INFO     Task ai_agent_background.process_monday_webhook[00fdc79f-820a-4895-bd00-6a0b1bd46841] received
+[2025-10-02 16:30:29] INFO     Task ai_agent_background.execute_workflow[c1991bb6-14cf-4f50-a142-49637e332231] received
+[2025-10-02 16:32:36] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-02T13:32:36.229694Z"}
+[2025-10-02 16:32:36] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-02 17:06:48] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-02T14:06:48.220911Z"}
+[2025-10-02 17:06:48] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-02T14:06:48.221403Z"}
+[2025-10-02 17:06:48] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-02T14:06:48.221501Z"}
+[2025-10-02 17:06:48] INFO     celery@MacBookPro ready.
+[2025-10-02 17:06:54] INFO     Task ai_agent_background.process_monday_webhook[82647b51-fa8f-4a68-afe0-a8f841e9d7fe] received
+[2025-10-02 17:06:59] INFO     Task ai_agent_background.execute_workflow[a3fd7ad3-48d9-48c6-a478-1dcd1f269a79] received
+[2025-10-02 17:08:33] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-02T14:08:33.480779Z"}
+[2025-10-02 17:08:34] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-02 17:16:19] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-02T14:16:19.036863Z"}
+[2025-10-02 17:16:19] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-02T14:16:19.038184Z"}
+[2025-10-02 17:16:19] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-02T14:16:19.038341Z"}
+[2025-10-02 17:16:19] INFO     celery@MacBookPro ready.
+[2025-10-02 17:16:25] INFO     Task ai_agent_background.process_monday_webhook[35267b41-1b4d-40ce-b8a4-0a63d5f1e9b3] received
+[2025-10-02 17:16:28] INFO     Task ai_agent_background.execute_workflow[dd46a830-5da9-45cb-98f8-0df2ee9a550d] received
+[2025-10-02 17:18:27] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-02T14:18:27.139367Z"}
+[2025-10-02 17:18:27] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-02 17:29:37] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-02T14:29:37.298307Z"}
+[2025-10-02 17:29:37] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-02T14:29:37.298991Z"}
+[2025-10-02 17:29:37] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-02T14:29:37.299124Z"}
+[2025-10-02 17:29:37] INFO     celery@MacBookPro ready.
+[2025-10-02 17:29:40] INFO     Task ai_agent_background.process_monday_webhook[5a16ad55-72f8-4142-9eda-75ceea794e45] received
+[2025-10-02 17:29:47] INFO     Task ai_agent_background.execute_workflow[00e62b28-32db-45ec-9056-d69e953ded76] received
+[2025-10-02 17:33:04] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-02T14:33:04.568269Z"}
+[2025-10-02 17:33:05] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-02 17:56:31] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-02T14:56:31.809930Z"}
+[2025-10-02 17:56:31] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-02T14:56:31.810588Z"}
+[2025-10-02 17:56:31] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-02T14:56:31.810796Z"}
+[2025-10-02 17:56:31] INFO     celery@MacBookPro ready.
+[2025-10-02 17:56:36] INFO     Task ai_agent_background.process_monday_webhook[c17bedc8-558d-445e-9502-5ea2331165d3] received
+[2025-10-02 17:56:39] INFO     Task ai_agent_background.execute_workflow[bb526cd1-ea84-4a56-956c-e68a368707cd] received
+[2025-10-02 17:58:21] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-02T14:58:21.153179Z"}
+[2025-10-02 17:58:22] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-02 18:11:43] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-02T15:11:43.635903Z"}
+[2025-10-02 18:11:43] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-02T15:11:43.636380Z"}
+[2025-10-02 18:11:43] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-02T15:11:43.636454Z"}
+[2025-10-02 18:11:43] INFO     celery@MacBookPro ready.
+[2025-10-02 18:11:47] INFO     Task ai_agent_background.process_monday_webhook[50ebcae5-d7ff-4b7d-8357-5a7dbdba4730] received
+[2025-10-02 18:11:51] INFO     Task ai_agent_background.execute_workflow[9c98c5b0-5c30-477f-9ef1-a5c7423b0e15] received
+[2025-10-02 18:21:39] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-02T15:21:39.979727Z"}
+[2025-10-02 18:23:34] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-02T15:23:34.355346Z"}
+[2025-10-02 18:23:34] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-02T15:23:34.355991Z"}
+[2025-10-02 18:23:34] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-02T15:23:34.356107Z"}
+[2025-10-02 18:23:34] INFO     celery@MacBookPro ready.
+[2025-10-02 18:23:41] INFO     Task ai_agent_background.process_monday_webhook[a0a247c1-0d0a-499c-95a8-604c2009015b] received
+[2025-10-02 18:23:44] INFO     Task ai_agent_background.execute_workflow[f52f0181-c7c6-4816-892e-0c370f08800e] received
+[2025-10-02 18:28:26] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-02T15:28:26.514212Z"}
+[2025-10-02 18:34:04] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-02T15:34:04.143397Z"}
+[2025-10-02 18:34:04] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-02T15:34:04.144035Z"}
+[2025-10-02 18:34:04] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-02T15:34:04.144135Z"}
+[2025-10-02 18:34:04] INFO     celery@MacBookPro ready.
+[2025-10-02 18:34:08] INFO     Task ai_agent_background.process_monday_webhook[e8032f8c-5cc7-4179-aa00-d49ffce17bd2] received
+[2025-10-02 18:34:11] INFO     Task ai_agent_background.execute_workflow[c965867b-1c8f-4438-a2a6-9bc71a2f82a9] received
+[2025-10-02 19:29:12] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-02T16:29:12.383590Z"}
+[2025-10-03 11:51:25] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-03T08:51:25.097056Z"}
+[2025-10-03 11:51:25] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-03T08:51:25.097775Z"}
+[2025-10-03 11:51:25] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-03T08:51:25.097931Z"}
+[2025-10-03 11:51:25] INFO     celery@MacBookPro ready.
+[2025-10-03 11:51:29] INFO     Task ai_agent_background.process_monday_webhook[a57d7998-b3e0-450f-ba0a-b8fd75908be5] received
+[2025-10-03 11:51:32] INFO     Task ai_agent_background.execute_workflow[2d6fcbc9-8ced-49ad-babf-13ad07abeadc] received
+[2025-10-03 11:53:31] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-03T08:53:31.666472Z"}
+[2025-10-03 14:32:54] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-03T11:32:54.636470Z"}
+[2025-10-03 14:32:54] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-03T11:32:54.637041Z"}
+[2025-10-03 14:32:54] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-03T11:32:54.637158Z"}
+[2025-10-03 14:32:54] INFO     celery@MacBookPro ready.
+[2025-10-03 14:32:59] INFO     Task ai_agent_background.process_monday_webhook[6169ea31-b8a6-4810-83c5-881663df84f8] received
+[2025-10-03 14:33:03] INFO     Task ai_agent_background.execute_workflow[651ebf10-e2c6-4584-9416-0462b48d3ccf] received
+[2025-10-03 14:34:28] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 11 (SIGSEGV) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 11 (SIGSEGV) Job: 1.
+"""
+[2025-10-03 14:34:28] INFO     Task ai_agent_background.execute_workflow[651ebf10-e2c6-4584-9416-0462b48d3ccf] received
+[2025-10-03 14:35:27] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-03T11:35:27.457906Z"}
+[2025-10-03 15:12:13] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-03T12:12:13.154234Z"}
+[2025-10-03 15:12:13] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-03T12:12:13.154902Z"}
+[2025-10-03 15:12:13] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-03T12:12:13.155045Z"}
+[2025-10-03 15:12:13] INFO     celery@MacBookPro ready.
+[2025-10-03 15:12:15] INFO     Task ai_agent_background.process_monday_webhook[70ff016d-83d4-46f3-8dba-6b8b0e15ad0d] received
+[2025-10-03 15:12:18] INFO     Task ai_agent_background.execute_workflow[adb99d4e-0c8f-4b54-a842-c127f301ae7a] received
+[2025-10-03 15:14:43] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-03T12:14:43.629074Z"}
+[2025-10-03 16:07:04] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-03T13:07:04.933596Z"}
+[2025-10-03 16:07:04] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-03T13:07:04.934205Z"}
+[2025-10-03 16:07:04] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-03T13:07:04.934350Z"}
+[2025-10-03 16:07:04] INFO     celery@MacBookPro ready.
+[2025-10-03 16:07:10] INFO     Task ai_agent_background.process_monday_webhook[c57ff4b7-b610-404f-bf79-95accd2205af] received
+[2025-10-03 16:07:13] INFO     Task ai_agent_background.execute_workflow[be36866d-bd91-4e30-a3fa-1d6cf6c36ca5] received
+[2025-10-03 16:10:19] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-03T13:10:19.495303Z"}
+[2025-10-05 12:08:11] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-05T09:08:11.934717Z"}
+[2025-10-05 12:08:11] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-05T09:08:11.935498Z"}
+[2025-10-05 12:08:11] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-05T09:08:11.935679Z"}
+[2025-10-05 12:08:11] INFO     celery@MacBookPro ready.
+[2025-10-05 12:08:37] INFO     Task ai_agent_background.process_monday_webhook[72bf427f-4d45-4326-a87e-f94c511bfb35] received
+[2025-10-05 12:08:41] INFO     Task ai_agent_background.execute_workflow[a760e1d9-92fa-41e8-8c25-54c1635750a1] received
+[2025-10-05 12:13:07] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-05T09:13:07.301963Z"}
+[2025-10-05 14:35:37] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-05T11:35:37.439678Z"}
+[2025-10-05 14:35:37] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-05T11:35:37.440432Z"}
+[2025-10-05 14:35:37] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-05T11:35:37.440668Z"}
+[2025-10-05 14:35:37] INFO     celery@MacBookPro ready.
+[2025-10-05 14:35:40] INFO     Task ai_agent_background.process_monday_webhook[dd010d65-5c69-4085-9084-1938a3ae12c6] received
+[2025-10-05 14:35:43] INFO     Task ai_agent_background.execute_workflow[d7930275-890e-407f-8748-38d82c1de549] received
+[2025-10-05 14:37:38] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-05T11:37:38.414319Z"}
+[2025-10-05 14:54:51] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-05T11:54:51.602545Z"}
+[2025-10-05 14:54:51] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-05T11:54:51.603210Z"}
+[2025-10-05 14:54:51] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-05T11:54:51.603428Z"}
+[2025-10-05 14:54:51] INFO     celery@MacBookPro ready.
+[2025-10-05 14:54:55] INFO     Task ai_agent_background.process_monday_webhook[be6a8a7c-40ff-47db-8822-f89c51ad41f4] received
+[2025-10-05 14:54:58] INFO     Task ai_agent_background.execute_workflow[b8d808e1-7bf9-4b63-a56c-2ce77a001c55] received
+[2025-10-05 14:56:25] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-05T11:56:25.358724Z"}
+[2025-10-05 16:31:50] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-05T13:31:50.752835Z"}
+[2025-10-05 16:31:50] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-05T13:31:50.753408Z"}
+[2025-10-05 16:31:50] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-05T13:31:50.753521Z"}
+[2025-10-05 16:31:50] INFO     celery@MacBookPro ready.
+[2025-10-05 16:31:54] INFO     Task ai_agent_background.process_monday_webhook[7910ad77-e7ac-4699-9b3a-03b704a26675] received
+[2025-10-05 16:31:56] INFO     Task ai_agent_background.execute_workflow[528d373e-d48a-4a7b-b5ed-c0fd4095ef0e] received
+[2025-10-05 16:33:47] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-05T13:33:47.864476Z"}
+[2025-10-05 16:41:05] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-05T13:41:05.235744Z"}
+[2025-10-05 16:41:05] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-05T13:41:05.236221Z"}
+[2025-10-05 16:41:05] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-05T13:41:05.236360Z"}
+[2025-10-05 16:41:05] INFO     celery@MacBookPro ready.
+[2025-10-05 16:41:12] INFO     Task ai_agent_background.process_monday_webhook[b92b9c1a-913c-44f7-b09c-08ec4469aa91] received
+[2025-10-05 16:41:15] INFO     Task ai_agent_background.execute_workflow[a7e3756d-7d75-4648-8eb9-2fc399bd0f72] received
+[2025-10-05 16:43:22] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-05T13:43:22.316119Z"}
+[2025-10-05 16:50:26] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-05T13:50:26.513730Z"}
+[2025-10-05 16:50:26] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-05T13:50:26.514427Z"}
+[2025-10-05 16:50:26] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-05T13:50:26.514550Z"}
+[2025-10-05 16:50:26] INFO     celery@MacBookPro ready.
+[2025-10-05 16:53:46] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-05T13:53:46.069762Z"}
+[2025-10-05 16:58:57] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-05T13:58:57.113197Z"}
+[2025-10-05 16:58:57] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-05T13:58:57.113893Z"}
+[2025-10-05 16:58:57] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-05T13:58:57.114086Z"}
+[2025-10-05 16:58:57] INFO     celery@MacBookPro ready.
+[2025-10-05 16:59:01] INFO     Task ai_agent_background.process_monday_webhook[5a10f5af-69cf-4da0-8d12-fdd93add85b0] received
+[2025-10-05 16:59:05] INFO     Task ai_agent_background.execute_workflow[80a06e06-3fb5-4825-b8fb-8ad7701ce431] received
+[2025-10-05 17:01:34] WARNING  {"event": "\u274c Erreur finalisation services: Event loop is closed", "level": "error", "timestamp": "2025-10-05T14:01:34.430890Z"}
+[2025-10-05 18:05:00] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-05T15:05:00.666997Z"}
+[2025-10-05 18:05:00] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-05T15:05:00.667687Z"}
+[2025-10-05 18:05:00] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-05T15:05:00.667816Z"}
+[2025-10-05 18:05:00] INFO     celery@MacBookPro ready.
+[2025-10-05 18:05:02] INFO     Task ai_agent_background.process_monday_webhook[177b1861-e9f8-470b-800a-fdcc41c5cc6a] received
+[2025-10-05 18:05:06] INFO     Task ai_agent_background.execute_workflow[cfdae05a-1bbf-4b8d-b665-0a1cef0b129a] received
+[2025-10-05 18:07:37] WARNING  {"event": "\ud83d\uded1 Arr\u00eat du monitoring", "level": "info", "timestamp": "2025-10-05T15:07:37.618333Z"}
+[2025-10-05 18:07:37] WARNING  {"event": "\u2705 Monitoring arr\u00eat\u00e9 proprement", "level": "info", "timestamp": "2025-10-05T15:07:37.620756Z"}
+[2025-10-05 18:07:37] WARNING  {"event": "\u2705 Monitoring finalis\u00e9", "level": "info", "timestamp": "2025-10-05T15:07:37.621051Z"}
+[2025-10-05 19:19:22] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-05T16:19:22.235888Z"}
+[2025-10-05 19:19:22] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-05T16:19:22.236415Z"}
+[2025-10-05 19:19:22] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-05T16:19:22.236486Z"}
+[2025-10-05 19:19:22] INFO     celery@MacBookPro ready.
+[2025-10-05 19:19:27] INFO     Task ai_agent_background.process_monday_webhook[694f2549-f326-4ecb-9db8-e8bec296f0bd] received
+[2025-10-05 19:19:31] INFO     Task ai_agent_background.execute_workflow[4e650110-8103-45f6-912d-a59c1478fdf5] received
+[2025-10-06 11:25:15] WARNING  {"event": "\ud83d\uded1 Arr\u00eat du monitoring", "level": "info", "timestamp": "2025-10-06T08:25:15.055562Z"}
+[2025-10-06 11:25:15] WARNING  {"event": "\u2705 Monitoring arr\u00eat\u00e9 proprement", "level": "info", "timestamp": "2025-10-06T08:25:15.070617Z"}
+[2025-10-06 11:25:15] WARNING  {"event": "\u2705 Monitoring finalis\u00e9", "level": "info", "timestamp": "2025-10-06T08:25:15.071074Z"}
+[2025-10-06 11:27:02] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-06T08:27:02.150536Z"}
+[2025-10-06 11:27:02] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-06T08:27:02.151071Z"}
+[2025-10-06 11:27:02] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-06T08:27:02.151192Z"}
+[2025-10-06 11:27:02] INFO     celery@MacBookPro ready.
+[2025-10-06 11:27:07] INFO     Task ai_agent_background.process_monday_webhook[f90998df-47a5-445a-9487-6b82bfda1341] received
+[2025-10-06 11:27:11] INFO     Task ai_agent_background.execute_workflow[cf5b5182-7b30-4927-be51-3645abb2cb55] received
+[2025-10-06 11:30:20] WARNING  {"event": "\ud83d\uded1 Arr\u00eat du monitoring", "level": "info", "timestamp": "2025-10-06T08:30:20.309413Z"}
+[2025-10-06 11:30:20] WARNING  {"event": "\u2705 Monitoring arr\u00eat\u00e9 proprement", "level": "info", "timestamp": "2025-10-06T08:30:20.310414Z"}
+[2025-10-06 11:30:20] WARNING  {"event": "\u2705 Monitoring finalis\u00e9", "level": "info", "timestamp": "2025-10-06T08:30:20.310605Z"}
+[2025-10-06 12:07:48] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-06T09:07:48.793195Z"}
+[2025-10-06 12:07:48] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-06T09:07:48.793956Z"}
+[2025-10-06 12:07:48] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-06T09:07:48.794111Z"}
+[2025-10-06 12:07:48] INFO     celery@MacBookPro ready.
+[2025-10-06 12:07:53] INFO     Task ai_agent_background.process_monday_webhook[c0f693e0-65cb-4c42-8929-48df2a026a46] received
+[2025-10-06 12:07:57] INFO     Task ai_agent_background.execute_workflow[077f8a96-0fd3-4918-964d-b21d277dc48e] received
+[2025-10-06 12:09:25] WARNING  {"event": "\ud83d\uded1 Arr\u00eat du monitoring", "level": "info", "timestamp": "2025-10-06T09:09:25.026581Z"}
+[2025-10-06 12:09:25] WARNING  {"event": "\u2705 Monitoring arr\u00eat\u00e9 proprement", "level": "info", "timestamp": "2025-10-06T09:09:25.031486Z"}
+[2025-10-06 12:09:25] WARNING  {"event": "\u2705 Monitoring finalis\u00e9", "level": "info", "timestamp": "2025-10-06T09:09:25.031819Z"}
+[2025-10-06 12:28:42] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-06T09:28:42.292980Z"}
+[2025-10-06 12:28:42] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-06T09:28:42.293773Z"}
+[2025-10-06 12:28:42] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-06T09:28:42.293932Z"}
+[2025-10-06 12:28:42] INFO     celery@MacBookPro ready.
+[2025-10-06 12:28:53] INFO     Task ai_agent_background.process_monday_webhook[4a771571-2027-4c39-b851-520600301da3] received
+[2025-10-06 12:28:56] INFO     Task ai_agent_background.execute_workflow[bce9bbd2-9484-4122-84db-a90bc509d76a] received
+[2025-10-06 12:30:07] WARNING  {"event": "\ud83d\uded1 Arr\u00eat du monitoring", "level": "info", "timestamp": "2025-10-06T09:30:07.240933Z"}
+[2025-10-06 12:30:07] WARNING  {"event": "\u2705 Monitoring arr\u00eat\u00e9 proprement", "level": "info", "timestamp": "2025-10-06T09:30:07.244207Z"}
+[2025-10-06 12:30:07] WARNING  {"event": "\u2705 Monitoring finalis\u00e9", "level": "info", "timestamp": "2025-10-06T09:30:07.244684Z"}
+[2025-10-06 12:30:07] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-06 12:39:11] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-06T09:39:11.069308Z"}
+[2025-10-06 12:39:11] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-06T09:39:11.069900Z"}
+[2025-10-06 12:39:11] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-06T09:39:11.070007Z"}
+[2025-10-06 12:39:11] INFO     celery@MacBookPro ready.
+[2025-10-06 12:39:23] INFO     Task ai_agent_background.process_monday_webhook[39fad657-6a55-4df6-8c14-2860c39d1608] received
+[2025-10-06 12:39:28] INFO     Task ai_agent_background.execute_workflow[c4dd23a0-6746-48b9-9a9f-83b210fffe06] received
+[2025-10-06 12:40:30] WARNING  {"event": "\ud83d\uded1 Arr\u00eat du monitoring", "level": "info", "timestamp": "2025-10-06T09:40:30.807180Z"}
+[2025-10-06 12:40:30] WARNING  {"event": "\u2705 Monitoring arr\u00eat\u00e9 proprement", "level": "info", "timestamp": "2025-10-06T09:40:30.811514Z"}
+[2025-10-06 12:40:30] WARNING  {"event": "\u2705 Monitoring finalis\u00e9", "level": "info", "timestamp": "2025-10-06T09:40:30.812868Z"}
+[2025-10-06 12:40:31] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-06 12:48:33] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-06T09:48:33.962928Z"}
+[2025-10-06 12:48:33] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-06T09:48:33.964469Z"}
+[2025-10-06 12:48:33] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-06T09:48:33.965138Z"}
+[2025-10-06 12:48:33] INFO     celery@MacBookPro ready.
+[2025-10-06 12:48:38] INFO     Task ai_agent_background.process_monday_webhook[2569a0e8-ab09-4bb9-88b5-6fab1c7fadde] received
+[2025-10-06 12:48:41] INFO     Task ai_agent_background.execute_workflow[d986d160-6d23-4dfa-acbf-c5a96e569974] received
+[2025-10-06 12:51:26] WARNING  {"event": "\ud83d\uded1 Arr\u00eat du monitoring", "level": "info", "timestamp": "2025-10-06T09:51:26.701895Z"}
+[2025-10-06 12:51:26] WARNING  {"event": "\u2705 Monitoring arr\u00eat\u00e9 proprement", "level": "info", "timestamp": "2025-10-06T09:51:26.707708Z"}
+[2025-10-06 12:51:26] WARNING  {"event": "\u2705 Monitoring finalis\u00e9", "level": "info", "timestamp": "2025-10-06T09:51:26.708490Z"}
+[2025-10-06 14:34:11] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-06T11:34:11.514129Z"}
+[2025-10-06 14:34:11] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-06T11:34:11.514722Z"}
+[2025-10-06 14:34:11] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-06T11:34:11.514811Z"}
+[2025-10-06 14:34:11] INFO     celery@MacBookPro ready.
+[2025-10-06 14:34:17] INFO     Task ai_agent_background.process_monday_webhook[5bb93c0f-afeb-46c9-952b-13a3b8ed405b] received
+[2025-10-06 14:34:20] INFO     Task ai_agent_background.execute_workflow[2cdee83f-cbcd-474b-af76-63fe6c7ddef7] received
+[2025-10-06 14:36:51] WARNING  {"event": "\ud83d\uded1 Arr\u00eat du monitoring", "level": "info", "timestamp": "2025-10-06T11:36:51.591815Z"}
+[2025-10-06 14:36:51] WARNING  {"event": "\u2705 Monitoring arr\u00eat\u00e9 proprement", "level": "info", "timestamp": "2025-10-06T11:36:51.594469Z"}
+[2025-10-06 14:36:51] WARNING  {"event": "\u2705 Monitoring finalis\u00e9", "level": "info", "timestamp": "2025-10-06T11:36:51.595579Z"}
+[2025-10-06 14:36:51] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-06 14:37:45] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-06T11:37:45.788423Z"}
+[2025-10-06 14:37:45] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-06T11:37:45.788983Z"}
+[2025-10-06 14:37:45] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-06T11:37:45.789154Z"}
+[2025-10-06 14:37:45] INFO     celery@MacBookPro ready.
+[2025-10-06 14:37:52] INFO     Task ai_agent_background.process_monday_webhook[d66f9ed8-6d76-4e69-b124-3a7a03c1633e] received
+[2025-10-06 14:37:55] INFO     Task ai_agent_background.execute_workflow[5789c621-cce3-45da-87b4-dc2c37be5311] received
+[2025-10-06 14:51:27] WARNING  {"event": "\ud83d\uded1 Arr\u00eat du monitoring", "level": "info", "timestamp": "2025-10-06T11:51:27.308471Z"}
+[2025-10-06 14:51:27] WARNING  {"event": "\u2705 Monitoring arr\u00eat\u00e9 proprement", "level": "info", "timestamp": "2025-10-06T11:51:27.311821Z"}
+[2025-10-06 14:51:27] WARNING  {"event": "\u2705 Monitoring finalis\u00e9", "level": "info", "timestamp": "2025-10-06T11:51:27.312440Z"}
+[2025-10-06 15:02:40] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-06T12:02:40.674196Z"}
+[2025-10-06 15:02:40] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-06T12:02:40.674723Z"}
+[2025-10-06 15:02:40] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-06T12:02:40.674841Z"}
+[2025-10-06 15:02:40] INFO     celery@MacBookPro ready.
+[2025-10-06 15:02:50] INFO     Task ai_agent_background.process_monday_webhook[5443fe7d-fd86-4f2a-9475-a290748c6217] received
+[2025-10-06 15:02:53] INFO     Task ai_agent_background.execute_workflow[2f4d1e5b-f1ba-47d1-b1dc-da476a6b88e1] received
+[2025-10-06 15:03:55] WARNING  {"event": "\ud83d\uded1 Arr\u00eat du monitoring", "level": "info", "timestamp": "2025-10-06T12:03:55.009203Z"}
+[2025-10-06 15:03:55] WARNING  {"event": "\u2705 Monitoring arr\u00eat\u00e9 proprement", "level": "info", "timestamp": "2025-10-06T12:03:55.011512Z"}
+[2025-10-06 15:03:55] WARNING  {"event": "\u2705 Monitoring finalis\u00e9", "level": "info", "timestamp": "2025-10-06T12:03:55.011806Z"}
+[2025-10-06 15:03:55] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-06 15:16:30] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-06T12:16:30.506431Z"}
+[2025-10-06 15:16:30] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-06T12:16:30.507039Z"}
+[2025-10-06 15:16:30] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-06T12:16:30.507162Z"}
+[2025-10-06 15:16:30] INFO     celery@MacBookPro ready.
+[2025-10-06 15:16:34] INFO     Task ai_agent_background.process_monday_webhook[2743945b-b192-4c89-aebf-cac477ff025a] received
+[2025-10-06 15:16:37] INFO     Task ai_agent_background.execute_workflow[7193997a-d10b-4157-aa7d-26ace2fa042b] received
+[2025-10-06 20:24:19] WARNING  {"event": "\ud83d\uded1 Arr\u00eat du monitoring", "level": "info", "timestamp": "2025-10-06T17:24:19.550603Z"}
+[2025-10-06 20:24:19] WARNING  {"event": "\u2705 Monitoring arr\u00eat\u00e9 proprement", "level": "info", "timestamp": "2025-10-06T17:24:19.557460Z"}
+[2025-10-06 20:24:19] WARNING  {"event": "\u2705 Monitoring finalis\u00e9", "level": "info", "timestamp": "2025-10-06T17:24:19.557851Z"}
+[2025-10-07 11:36:47] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-07T08:36:47.794217Z"}
+[2025-10-07 11:36:47] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-07T08:36:47.794833Z"}
+[2025-10-07 11:36:47] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-07T08:36:47.794907Z"}
+[2025-10-07 11:36:47] INFO     celery@MacBookPro ready.
+[2025-10-07 11:36:54] INFO     Task ai_agent_background.process_monday_webhook[05114620-7eea-4b57-a3e7-feeb51939f18] received
+[2025-10-07 11:36:57] INFO     Task ai_agent_background.execute_workflow[83487b33-a3b9-4c8c-a6e1-7f9c302b096b] received
+[2025-10-07 11:51:20] WARNING  {"event": "\ud83d\uded1 Arr\u00eat du monitoring", "level": "info", "timestamp": "2025-10-07T08:51:20.904710Z"}
+[2025-10-07 11:51:20] WARNING  {"event": "\u2705 Monitoring arr\u00eat\u00e9 proprement", "level": "info", "timestamp": "2025-10-07T08:51:20.933958Z"}
+[2025-10-07 11:51:20] WARNING  {"event": "\u2705 Monitoring finalis\u00e9", "level": "info", "timestamp": "2025-10-07T08:51:20.938020Z"}
+[2025-10-07 12:11:09] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-07T09:11:09.252512Z"}
+[2025-10-07 12:11:09] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-07T09:11:09.253347Z"}
+[2025-10-07 12:11:09] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-07T09:11:09.253644Z"}
+[2025-10-07 12:11:09] INFO     celery@MacBookPro ready.
+[2025-10-07 12:11:22] INFO     Task ai_agent_background.process_monday_webhook[063c11f4-b424-40b2-95b3-1156b15b287c] received
+[2025-10-07 12:11:26] INFO     Task ai_agent_background.execute_workflow[e39a9bf8-dae5-4f40-996c-c725b1e3b5ca] received
+[2025-10-07 12:15:25] WARNING  {"event": "\ud83d\uded1 Arr\u00eat du monitoring", "level": "info", "timestamp": "2025-10-07T09:15:25.591181Z"}
+[2025-10-07 12:15:25] WARNING  {"event": "\u2705 Monitoring arr\u00eat\u00e9 proprement", "level": "info", "timestamp": "2025-10-07T09:15:25.607462Z"}
+[2025-10-07 12:15:25] WARNING  {"event": "\u2705 Monitoring finalis\u00e9", "level": "info", "timestamp": "2025-10-07T09:15:25.610544Z"}
+[2025-10-07 12:23:06] WARNING  {"event": "\ud83d\udcca Logging Celery configur\u00e9: logs (env: development)", "level": "info", "timestamp": "2025-10-07T09:23:06.968228Z"}
+[2025-10-07 12:23:06] WARNING  {"event": "\u2705 Logging Celery configur\u00e9 de mani\u00e8re robuste", "level": "info", "timestamp": "2025-10-07T09:23:06.968950Z"}
+[2025-10-07 12:23:06] WARNING  {"event": "\ud83d\udcca Logs: logs (development)", "level": "info", "timestamp": "2025-10-07T09:23:06.969148Z"}
+[2025-10-07 12:23:06] INFO     celery@MacBookPro ready.
+[2025-10-07 12:23:12] INFO     Task ai_agent_background.process_monday_webhook[58bb58c4-e29e-4abe-a336-d7fb4856ff50] received
+[2025-10-07 12:23:15] INFO     Task ai_agent_background.execute_workflow[94aec787-b6cb-4c0c-9f29-0e205487670f] received
+[2025-10-07 12:31:57] WARNING  {"event": "\ud83d\uded1 Arr\u00eat du monitoring", "level": "info", "timestamp": "2025-10-07T09:31:57.564233Z"}
+[2025-10-07 12:31:57] WARNING  {"event": "\u2705 Monitoring arr\u00eat\u00e9 proprement", "level": "info", "timestamp": "2025-10-07T09:31:57.587468Z"}
+[2025-10-07 12:31:57] WARNING  {"event": "\u2705 Monitoring finalis\u00e9", "level": "info", "timestamp": "2025-10-07T09:31:57.588869Z"}
+[2025-10-07 15:04:04] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-07T12:04:04.997006Z"}
+[2025-10-07 15:04:04] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-07T12:04:04.997553Z"}
+[2025-10-07 15:04:04] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-07T12:04:04.997668Z"}
+[2025-10-07 15:04:04] INFO     celery@MacBookPro ready.
+[2025-10-07 15:04:12] INFO     Task ai_agent_background.process_monday_webhook[b53a67fa-7034-4ef1-96b1-36c4cb4b6a71] received
+[2025-10-07 15:04:16] INFO     Task ai_agent_background.execute_workflow[a2d08a1e-a0a5-43f3-9742-fc6efecd75cf] received
+[2025-10-07 15:12:08] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-07T12:12:08.958509Z"}
+[2025-10-07 15:12:08] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-07T12:12:08.962564Z"}
+[2025-10-07 15:12:08] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-07T12:12:08.963611Z"}
+[2025-10-07 15:27:22] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-07T12:27:22.177712Z"}
+[2025-10-07 15:27:22] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-07T12:27:22.178389Z"}
+[2025-10-07 15:27:22] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-07T12:27:22.178481Z"}
+[2025-10-07 15:27:22] INFO     celery@MacBookPro ready.
+[2025-10-07 15:27:31] INFO     Task ai_agent_background.process_monday_webhook[3f571d68-4f33-4189-8f9f-0f3d69539a2e] received
+[2025-10-07 15:27:34] INFO     Task ai_agent_background.execute_workflow[6f222c9c-d897-480f-bc60-8babb86bd8af] received
+[2025-10-07 15:32:33] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-07T12:32:33.262015Z"}
+[2025-10-07 15:32:33] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-07T12:32:33.267166Z"}
+[2025-10-07 15:32:33] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-07T12:32:33.268126Z"}
+[2025-10-07 16:33:02] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-07T13:33:02.422809Z"}
+[2025-10-07 16:33:02] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-07T13:33:02.423479Z"}
+[2025-10-07 16:33:02] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-07T13:33:02.423614Z"}
+[2025-10-07 16:33:02] INFO     celery@MacBookPro ready.
+[2025-10-07 16:34:12] INFO     Task ai_agent_background.process_monday_webhook[9e023797-ebe4-4616-ae32-3543f410572e] received
+[2025-10-07 16:34:29] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-07T13:34:29.277924Z"}
+[2025-10-07 16:34:29] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-07T13:34:29.282167Z"}
+[2025-10-07 16:34:29] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-07T13:34:29.283659Z"}
+[2025-10-07 16:49:53] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-07T13:49:53.858144Z"}
+[2025-10-07 16:49:53] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-07T13:49:53.858972Z"}
+[2025-10-07 16:49:53] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-07T13:49:53.859171Z"}
+[2025-10-07 16:49:53] INFO     celery@MacBookPro ready.
+[2025-10-07 16:49:58] INFO     Task ai_agent_background.process_monday_webhook[e2b9c39f-8237-4e17-b93f-31bd0de1f867] received
+[2025-10-07 16:50:02] INFO     Task ai_agent_background.execute_workflow[d285f325-2990-4e95-a330-d072921e39ef] received
+[2025-10-07 16:53:32] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-07T13:53:32.914708Z"}
+[2025-10-07 16:53:32] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-07T13:53:32.918734Z"}
+[2025-10-07 16:53:32] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-07T13:53:32.919740Z"}
+[2025-10-07 17:13:57] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-07T14:13:57.302234Z"}
+[2025-10-07 17:13:57] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-07T14:13:57.302714Z"}
+[2025-10-07 17:13:57] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-07T14:13:57.302797Z"}
+[2025-10-07 17:13:57] INFO     celery@MacBookPro ready.
+[2025-10-07 17:14:08] INFO     Task ai_agent_background.process_monday_webhook[905fe7e9-0a9e-4766-b807-1c5023eea011] received
+[2025-10-07 17:14:11] INFO     Task ai_agent_background.execute_workflow[b880e854-6c64-4f00-ab5e-594e610ba417] received
+[2025-10-07 17:38:41] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-07T14:38:41.622366Z"}
+[2025-10-07 17:38:41] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-07T14:38:41.624338Z"}
+[2025-10-07 17:38:41] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-07T14:38:41.624702Z"}
+[2025-10-07 18:52:28] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-07T15:52:28.036000Z"}
+[2025-10-07 18:52:28] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-07T15:52:28.036819Z"}
+[2025-10-07 18:52:28] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-07T15:52:28.037298Z"}
+[2025-10-07 18:52:28] INFO     celery@MacBookPro ready.
+[2025-10-07 18:52:35] INFO     Task ai_agent_background.process_monday_webhook[400a8c0f-6dea-4bca-831f-cd891ca13382] received
+[2025-10-07 18:52:39] INFO     Task ai_agent_background.execute_workflow[5ed2e98c-8549-42d3-b094-642cf7566758] received
+[2025-10-07 19:01:51] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-07T16:01:51.787452Z"}
+[2025-10-07 19:01:51] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-07T16:01:51.789566Z"}
+[2025-10-07 19:01:51] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-07T16:01:51.789959Z"}
+[2025-10-07 19:05:42] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-07T16:05:42.566024Z"}
+[2025-10-07 19:05:42] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-07T16:05:42.566569Z"}
+[2025-10-07 19:05:42] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-07T16:05:42.566679Z"}
+[2025-10-07 19:05:42] INFO     celery@MacBookPro ready.
+[2025-10-07 19:05:47] INFO     Task ai_agent_background.process_monday_webhook[574159fc-c017-4882-9c6d-c4bb6af4d9ca] received
+[2025-10-07 19:05:50] INFO     Task ai_agent_background.execute_workflow[7971d6d4-042f-40b5-9228-d378b5497ab3] received
+[2025-10-07 19:08:30] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-07T16:08:30.987980Z"}
+[2025-10-07 19:08:30] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-07T16:08:30.989626Z"}
+[2025-10-07 19:08:30] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-07T16:08:30.989995Z"}
+[2025-10-07 19:14:36] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-07T16:14:36.558888Z"}
+[2025-10-07 19:14:36] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-07T16:14:36.559835Z"}
+[2025-10-07 19:14:36] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-07T16:14:36.559992Z"}
+[2025-10-07 19:14:36] INFO     celery@MacBookPro ready.
+[2025-10-07 19:14:40] INFO     Task ai_agent_background.process_monday_webhook[66329aa3-e172-49fb-b432-e83b7340e352] received
+[2025-10-07 19:14:43] INFO     Task ai_agent_background.execute_workflow[669d2408-6dd2-420e-95cd-f5853f90a3bf] received
+[2025-10-07 19:23:11] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-07T16:23:11.251344Z"}
+[2025-10-07 19:23:11] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-07T16:23:11.257617Z"}
+[2025-10-07 19:23:11] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-07T16:23:11.258765Z"}
+[2025-10-07 19:26:32] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-07T16:26:32.640151Z"}
+[2025-10-07 19:26:32] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-07T16:26:32.640916Z"}
+[2025-10-07 19:26:32] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-07T16:26:32.641104Z"}
+[2025-10-07 19:26:32] INFO     celery@MacBookPro ready.
+[2025-10-07 19:26:40] INFO     Task ai_agent_background.process_monday_webhook[12a4b1f3-51af-4b31-9636-219cf7cf0c5d] received
+[2025-10-07 19:26:43] INFO     Task ai_agent_background.execute_workflow[01bdb8ac-f3e5-4d6f-ba39-652b0ed93664] received
+[2025-10-07 19:35:26] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-07T16:35:26.983404Z"}
+[2025-10-07 19:35:26] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-07T16:35:26.986732Z"}
+[2025-10-07 19:35:26] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-07T16:35:26.987252Z"}
+[2025-10-07 19:52:32] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-07T16:52:32.124803Z"}
+[2025-10-07 19:52:32] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-07T16:52:32.125443Z"}
+[2025-10-07 19:52:32] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-07T16:52:32.125558Z"}
+[2025-10-07 19:52:32] INFO     celery@MacBookPro ready.
+[2025-10-07 19:52:36] INFO     Task ai_agent_background.process_monday_webhook[7059a79c-914a-4d82-9e06-1c115a2f56ce] received
+[2025-10-07 19:52:40] INFO     Task ai_agent_background.execute_workflow[bd99bb1c-0c90-47ad-923c-f60e57a35280] received
+[2025-10-07 19:59:39] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-07T16:59:39.959162Z"}
+[2025-10-07 19:59:39] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-07T16:59:39.961240Z"}
+[2025-10-07 19:59:39] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-07T16:59:39.961556Z"}
+[2025-10-11 16:26:47] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-11T13:26:47.211387Z"}
+[2025-10-11 16:26:47] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-11T13:26:47.212449Z"}
+[2025-10-11 16:26:47] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-11T13:26:47.212688Z"}
+[2025-10-11 16:26:47] INFO     celery@MacBookPro ready.
+[2025-10-11 16:26:57] INFO     Task ai_agent_background.process_monday_webhook[99107a8e-a0c6-43f6-854e-5184972c8a99] received
+[2025-10-11 16:26:59] INFO     Task ai_agent_background.execute_workflow[b446de8e-e91f-45fe-ae22-390b0906001b] received
+[2025-10-11 16:27:49] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-11T13:27:49.726120Z"}
+[2025-10-11 16:27:49] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-11T13:27:49.731352Z"}
+[2025-10-11 16:27:49] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-11T13:27:49.732207Z"}
+[2025-10-11 16:27:50] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-11 16:54:09] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-11T13:54:09.476831Z"}
+[2025-10-11 16:54:09] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-11T13:54:09.477702Z"}
+[2025-10-11 16:54:09] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-11T13:54:09.477859Z"}
+[2025-10-11 16:54:09] INFO     celery@MacBookPro ready.
+[2025-10-11 16:54:19] INFO     Task ai_agent_background.process_monday_webhook[97397109-6403-4b08-8194-9b6b017c2e42] received
+[2025-10-11 16:54:22] INFO     Task ai_agent_background.execute_workflow[f01392a5-a315-426e-b562-f499f2c494d5] received
+[2025-10-11 17:03:53] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-11T14:03:53.577652Z"}
+[2025-10-11 17:03:53] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-11T14:03:53.579887Z"}
+[2025-10-11 17:03:53] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-11T14:03:53.580670Z"}
+[2025-10-11 17:10:56] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-11T14:10:56.860922Z"}
+[2025-10-11 17:10:56] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-11T14:10:56.861623Z"}
+[2025-10-11 17:10:56] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-11T14:10:56.861741Z"}
+[2025-10-11 17:10:56] INFO     celery@MacBookPro ready.
+[2025-10-11 17:11:06] INFO     Task ai_agent_background.process_monday_webhook[1ad16313-f33f-4cd2-88a5-a132ae07a792] received
+[2025-10-11 17:11:07] INFO     Task ai_agent_background.execute_workflow[0b8608bc-f3d3-41c8-86bd-307949c50958] received
+[2025-10-11 18:58:32] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-11T15:58:32.370051Z"}
+[2025-10-11 18:58:32] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-11T15:58:32.377707Z"}
+[2025-10-11 18:58:32] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-11T15:58:32.378954Z"}
+[2025-10-11 20:22:28] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-11T17:22:28.633465Z"}
+[2025-10-11 20:22:28] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-11T17:22:28.634251Z"}
+[2025-10-11 20:22:28] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-11T17:22:28.634497Z"}
+[2025-10-11 20:22:28] INFO     celery@MacBookPro ready.
+[2025-10-11 20:22:43] INFO     Task ai_agent_background.process_monday_webhook[53135190-bf6a-4fc2-970f-8cae66c10b74] received
+[2025-10-11 20:22:46] INFO     Task ai_agent_background.execute_workflow[8cad1cd1-2a51-45c2-aba5-7b581a6dfdaf] received
+[2025-10-11 20:52:03] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-11T17:52:03.762754Z"}
+[2025-10-11 20:52:03] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-11T17:52:03.764038Z"}
+[2025-10-11 20:52:03] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-11T17:52:03.764597Z"}
+[2025-10-11 21:02:08] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-11T18:02:08.804125Z"}
+[2025-10-11 21:02:08] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-11T18:02:08.804874Z"}
+[2025-10-11 21:02:08] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-11T18:02:08.805020Z"}
+[2025-10-11 21:02:08] INFO     celery@MacBookPro ready.
+[2025-10-11 21:02:16] INFO     Task ai_agent_background.process_monday_webhook[e2a6d65e-fb86-488a-85dc-ce1bf2540664] received
+[2025-10-11 21:02:18] INFO     Task ai_agent_background.execute_workflow[ced938e1-b59e-4db6-a9b8-47972900bd53] received
+[2025-10-11 21:16:54] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-11T18:16:54.188910Z"}
+[2025-10-11 21:16:54] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-11T18:16:54.190200Z"}
+[2025-10-11 21:16:54] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-11T18:16:54.190567Z"}
+[2025-10-11 21:19:07] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-11T18:19:07.584873Z"}
+[2025-10-11 21:19:07] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-11T18:19:07.585464Z"}
+[2025-10-11 21:19:07] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-11T18:19:07.585574Z"}
+[2025-10-11 21:19:07] INFO     celery@MacBookPro ready.
+[2025-10-11 21:19:51] INFO     Task ai_agent_background.process_monday_webhook[852bdfe6-5653-4f83-afab-286b51ee5600] received
+[2025-10-11 21:19:52] INFO     Task ai_agent_background.execute_workflow[613eab24-0be3-4b59-bac9-ea6b783183c9] received
+[2025-10-11 21:22:19] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-11T18:22:19.975999Z"}
+[2025-10-11 21:22:19] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-11T18:22:19.981525Z"}
+[2025-10-11 21:22:19] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-11T18:22:19.982797Z"}
+[2025-10-11 21:22:20] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-11 21:30:45] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-11T18:30:45.059111Z"}
+[2025-10-11 21:30:45] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-11T18:30:45.059900Z"}
+[2025-10-11 21:30:45] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-11T18:30:45.060079Z"}
+[2025-10-11 21:30:45] INFO     celery@MacBookPro ready.
+[2025-10-11 21:30:52] INFO     Task ai_agent_background.process_monday_webhook[7a21290a-ce22-4751-9478-d4b7f84b37d6] received
+[2025-10-11 21:30:54] INFO     Task ai_agent_background.execute_workflow[2ceb4671-5408-4ed5-ab68-8e1fdb0de65f] received
+[2025-10-11 22:12:53] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-11T19:12:53.084883Z"}
+[2025-10-11 22:12:53] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-11T19:12:53.087413Z"}
+[2025-10-11 22:12:53] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-11T19:12:53.087995Z"}
+[2025-10-11 22:33:29] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-11T19:33:29.915484Z"}
+[2025-10-11 22:33:29] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-11T19:33:29.916045Z"}
+[2025-10-11 22:33:29] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-11T19:33:29.916225Z"}
+[2025-10-11 22:33:29] INFO     celery@MacBookPro ready.
+[2025-10-11 22:33:37] INFO     Task ai_agent_background.process_monday_webhook[0b11eb9e-1988-44f4-826a-ea542e6a9bbe] received
+[2025-10-11 22:33:39] INFO     Task ai_agent_background.execute_workflow[42c9acc5-b336-4f41-a1c4-ea5b2f13815e] received
+[2025-10-11 22:53:01] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-11T19:53:01.998479Z"}
+[2025-10-11 22:53:02] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-11T19:53:02.001495Z"}
+[2025-10-11 22:53:02] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-11T19:53:02.001847Z"}
+[2025-10-11 22:56:47] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-11T19:56:47.419807Z"}
+[2025-10-11 22:56:47] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-11T19:56:47.420587Z"}
+[2025-10-11 22:56:47] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-11T19:56:47.420766Z"}
+[2025-10-11 22:56:47] INFO     celery@MacBookPro ready.
+[2025-10-11 22:56:57] INFO     Task ai_agent_background.process_monday_webhook[ffd8b2be-8963-4cae-9d38-8acf8e874ce5] received
+[2025-10-11 22:56:59] INFO     Task ai_agent_background.execute_workflow[cc5b65e1-9bbc-4016-9055-f8719021a2ae] received
+[2025-10-11 22:57:17] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-11T19:57:17.414097Z"}
+[2025-10-11 22:57:17] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-11T19:57:17.418148Z"}
+[2025-10-11 22:57:17] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-11T19:57:17.420374Z"}
+[2025-10-11 22:57:18] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-12 11:15:08] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-12T08:15:08.922461Z"}
+[2025-10-12 11:15:08] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-12T08:15:08.923218Z"}
+[2025-10-12 11:15:08] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-12T08:15:08.923392Z"}
+[2025-10-12 11:15:08] INFO     celery@MacBookPro ready.
+[2025-10-12 11:15:15] INFO     Task ai_agent_background.process_monday_webhook[0c59529c-e5cf-4127-958f-71557e7abecf] received
+[2025-10-12 11:15:18] INFO     Task ai_agent_background.execute_workflow[af9fd8f0-7cf9-4055-af90-14bbe01910a1] received
+[2025-10-12 11:19:55] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-12T08:19:55.994325Z"}
+[2025-10-12 11:19:56] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-12T08:19:56.002007Z"}
+[2025-10-12 11:19:56] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-12T08:19:56.015813Z"}
+[2025-10-12 11:19:57] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-12 11:23:35] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-12T08:23:35.502959Z"}
+[2025-10-12 11:23:35] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-12T08:23:35.503702Z"}
+[2025-10-12 11:23:35] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-12T08:23:35.503875Z"}
+[2025-10-12 11:23:35] INFO     celery@MacBookPro ready.
+[2025-10-12 11:23:41] INFO     Task ai_agent_background.process_monday_webhook[aeee3d3a-6c03-44c7-9d17-541d92f73558] received
+[2025-10-12 11:23:42] INFO     Task ai_agent_background.execute_workflow[c113237c-5da7-4fbf-aad7-43590f064a93] received
+[2025-10-12 11:26:11] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-12T08:26:11.629109Z"}
+[2025-10-12 11:26:11] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-12T08:26:11.634987Z"}
+[2025-10-12 11:26:11] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-12T08:26:11.635639Z"}
+[2025-10-12 11:26:12] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-12 11:34:19] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-12T08:34:19.241538Z"}
+[2025-10-12 11:34:19] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-12T08:34:19.242372Z"}
+[2025-10-12 11:34:19] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-12T08:34:19.242535Z"}
+[2025-10-12 11:34:19] INFO     celery@MacBookPro ready.
+[2025-10-12 11:34:24] INFO     Task ai_agent_background.process_monday_webhook[1ba134ee-9baa-4648-9abb-87047b7e136f] received
+[2025-10-12 11:34:26] INFO     Task ai_agent_background.execute_workflow[94fa08ec-678f-4470-a1b1-4d09283faf28] received
+[2025-10-12 11:36:38] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-12T08:36:38.792172Z"}
+[2025-10-12 11:36:38] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-12T08:36:38.799137Z"}
+[2025-10-12 11:36:38] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-12T08:36:38.801135Z"}
+[2025-10-12 11:36:39] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-12 12:03:42] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-12T09:03:42.634963Z"}
+[2025-10-12 12:03:42] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-12T09:03:42.635459Z"}
+[2025-10-12 12:03:42] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-12T09:03:42.635575Z"}
+[2025-10-12 12:03:42] INFO     celery@MacBookPro ready.
+[2025-10-12 12:03:48] INFO     Task ai_agent_background.process_monday_webhook[eee3bb7a-84d2-41ab-a7c5-ef71f650ba7a] received
+[2025-10-12 12:03:50] INFO     Task ai_agent_background.execute_workflow[75fa24c1-e172-454a-a235-e889d9716fb3] received
+[2025-10-12 12:06:01] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-12T09:06:01.811189Z"}
+[2025-10-12 12:06:01] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-12T09:06:01.818189Z"}
+[2025-10-12 12:06:01] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-12T09:06:01.820526Z"}
+[2025-10-12 12:06:02] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-12 12:12:44] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-12T09:12:44.123606Z"}
+[2025-10-12 12:12:44] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-12T09:12:44.124231Z"}
+[2025-10-12 12:12:44] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-12T09:12:44.124347Z"}
+[2025-10-12 12:12:44] INFO     celery@MacBookPro ready.
+[2025-10-12 12:12:52] INFO     Task ai_agent_background.process_monday_webhook[a80d3b16-d859-4947-b350-3db9c4ce2c44] received
+[2025-10-12 12:12:54] INFO     Task ai_agent_background.execute_workflow[0afd9db9-01b3-4882-a20a-5fab6b5718dd] received
+[2025-10-12 12:15:12] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-12T09:15:12.977890Z"}
+[2025-10-12 12:15:12] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-12T09:15:12.982989Z"}
+[2025-10-12 12:15:12] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-12T09:15:12.983844Z"}
+[2025-10-12 12:15:13] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-12 12:20:31] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-12T09:20:31.130298Z"}
+[2025-10-12 12:20:31] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-12T09:20:31.130906Z"}
+[2025-10-12 12:20:31] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-12T09:20:31.130993Z"}
+[2025-10-12 12:20:31] INFO     celery@MacBookPro ready.
+[2025-10-12 12:20:37] INFO     Task ai_agent_background.process_monday_webhook[70c113f1-6846-4a86-b822-702d5ddce633] received
+[2025-10-12 12:20:38] INFO     Task ai_agent_background.execute_workflow[998f6ad1-6d7a-4d7b-9a08-6db773848b5d] received
+[2025-10-12 12:25:25] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-12T09:25:25.206430Z"}
+[2025-10-12 12:25:25] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-12T09:25:25.209298Z"}
+[2025-10-12 12:25:25] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-12T09:25:25.210409Z"}
+[2025-10-12 12:26:10] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-12T09:26:10.532146Z"}
+[2025-10-12 12:26:10] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-12T09:26:10.532902Z"}
+[2025-10-12 12:26:10] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-12T09:26:10.533114Z"}
+[2025-10-12 12:26:10] INFO     celery@MacBookPro ready.
+[2025-10-12 12:26:17] INFO     Task ai_agent_background.process_monday_webhook[1df0a9bb-555c-49fb-bc60-c9f60336f3f3] received
+[2025-10-12 12:26:19] INFO     Task ai_agent_background.execute_workflow[05dec753-0afc-4816-8363-883894a690b4] received
+[2025-10-12 12:27:38] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-12T09:27:38.694898Z"}
+[2025-10-12 12:27:38] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-12T09:27:38.698385Z"}
+[2025-10-12 12:27:38] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-12T09:27:38.698865Z"}
+[2025-10-12 12:27:39] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-12 12:30:40] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-12T09:30:40.208802Z"}
+[2025-10-12 12:30:40] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-12T09:30:40.209396Z"}
+[2025-10-12 12:30:40] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-12T09:30:40.209614Z"}
+[2025-10-12 12:30:40] INFO     celery@MacBookPro ready.
+[2025-10-12 12:30:41] INFO     Task ai_agent_background.execute_workflow[11d94e95-03b5-4109-b725-fca47818bd85] received
+[2025-10-12 12:30:42] INFO     Task ai_agent_background.handle_dead_letter[3bbaf8fe-61bc-4300-aa1a-2053d84c929e] received
+[2025-10-12 12:30:47] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-12T09:30:47.521194Z"}
+[2025-10-12 12:30:47] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-12T09:30:47.522180Z"}
+[2025-10-12 12:30:47] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-12T09:30:47.522414Z"}
+[2025-10-12 12:31:22] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-12T09:31:22.797644Z"}
+[2025-10-12 12:31:22] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-12T09:31:22.798502Z"}
+[2025-10-12 12:31:22] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-12T09:31:22.798643Z"}
+[2025-10-12 12:31:22] INFO     celery@MacBookPro ready.
+[2025-10-12 12:31:29] INFO     Task ai_agent_background.process_monday_webhook[ec2c1e39-2041-40d9-a144-36b092859de5] received
+[2025-10-12 12:31:31] INFO     Task ai_agent_background.execute_workflow[f58b0da1-431c-4db3-9e28-b733089c17e2] received
+[2025-10-12 12:31:31] INFO     Task ai_agent_background.handle_dead_letter[bbb5420b-a981-46e0-aa37-c0ac8384af0f] received
+[2025-10-12 12:32:33] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-12T09:32:33.797747Z"}
+[2025-10-12 12:32:33] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-12T09:32:33.803354Z"}
+[2025-10-12 12:32:33] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-12T09:32:33.815379Z"}
+[2025-10-12 12:33:09] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-12T09:33:09.285476Z"}
+[2025-10-12 12:33:09] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-12T09:33:09.286304Z"}
+[2025-10-12 12:33:09] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-12T09:33:09.286467Z"}
+[2025-10-12 12:33:09] INFO     celery@MacBookPro ready.
+[2025-10-12 12:33:34] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-12T09:33:34.318836Z"}
+[2025-10-12 12:33:34] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-12T09:33:34.322577Z"}
+[2025-10-12 12:33:34] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-12T09:33:34.324001Z"}
+[2025-10-12 12:34:59] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-12T09:34:59.857768Z"}
+[2025-10-12 12:34:59] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-12T09:34:59.857894Z"}
+[2025-10-12 12:34:59] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-12T09:34:59.857974Z"}
+[2025-10-12 12:34:59] INFO     celery@MacBookPro ready.
+[2025-10-12 12:35:05] INFO     Task ai_agent_background.process_monday_webhook[cff41ec2-9b2c-42b8-b311-3bdb8111827b] received
+[2025-10-12 12:35:07] INFO     Task ai_agent_background.execute_workflow[b057d724-a0b7-43aa-b1fd-c849d1faabf9] received
+[2025-10-12 12:37:13] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-12T09:37:13.221692Z"}
+[2025-10-12 12:37:13] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-12T09:37:13.223047Z"}
+[2025-10-12 12:37:13] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-12T09:37:13.223307Z"}
+[2025-10-12 12:37:13] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-12 14:05:06] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-12T11:05:06.808693Z"}
+[2025-10-12 14:05:06] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-12T11:05:06.809251Z"}
+[2025-10-12 14:05:06] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-12T11:05:06.809400Z"}
+[2025-10-12 14:05:06] INFO     celery@MacBookPro ready.
+[2025-10-12 14:05:11] INFO     Task ai_agent_background.process_monday_webhook[d0cf5150-d4c0-469b-ae37-039bfce66e57] received
+[2025-10-12 14:05:13] INFO     Task ai_agent_background.execute_workflow[651b2468-432c-4b6f-a2c8-a666ea3eccb4] received
+[2025-10-12 14:07:41] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-12T11:07:41.017857Z"}
+[2025-10-12 14:07:41] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-12T11:07:41.020072Z"}
+[2025-10-12 14:07:41] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-12T11:07:41.020302Z"}
+[2025-10-12 14:07:41] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-12 14:10:04] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-12T11:10:04.930094Z"}
+[2025-10-12 14:10:04] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-12T11:10:04.931339Z"}
+[2025-10-12 14:10:04] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-12T11:10:04.931965Z"}
+[2025-10-12 14:10:04] INFO     celery@MacBookPro ready.
+[2025-10-12 14:10:10] INFO     Task ai_agent_background.process_monday_webhook[ee7839d8-ef84-42a5-b4c8-153045ac076a] received
+[2025-10-12 14:10:12] INFO     Task ai_agent_background.execute_workflow[df7d4f6b-c9b6-4933-92dd-62b907c5d680] received
+[2025-10-12 14:11:50] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-12T11:11:50.934316Z"}
+[2025-10-12 14:11:50] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-12T11:11:50.941524Z"}
+[2025-10-12 14:11:50] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-12T11:11:50.942630Z"}
+[2025-10-12 14:11:51] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-12 14:27:47] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-12T11:27:47.026561Z"}
+[2025-10-12 14:27:47] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-12T11:27:47.027562Z"}
+[2025-10-12 14:27:47] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-12T11:27:47.027813Z"}
+[2025-10-12 14:27:47] INFO     celery@MacBookPro ready.
+[2025-10-12 14:27:51] INFO     Task ai_agent_background.process_monday_webhook[6310b3b2-1196-4009-b7b1-829e94844f3f] received
+[2025-10-12 14:27:53] INFO     Task ai_agent_background.execute_workflow[b6f66cce-f46d-4517-ad20-204170ae2116] received
+[2025-10-12 14:30:05] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-12T11:30:05.075539Z"}
+[2025-10-12 14:30:05] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-12T11:30:05.079928Z"}
+[2025-10-12 14:30:05] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-12T11:30:05.081247Z"}
+[2025-10-12 14:30:05] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-12 15:11:46] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-12T12:11:46.265366Z"}
+[2025-10-12 15:11:46] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-12T12:11:46.266074Z"}
+[2025-10-12 15:11:46] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-12T12:11:46.266260Z"}
+[2025-10-12 15:11:46] INFO     celery@MacBookPro ready.
+[2025-10-12 15:11:51] INFO     Task ai_agent_background.process_monday_webhook[e530400a-fb37-4dba-b5cb-3d270b23a13b] received
+[2025-10-12 15:11:53] INFO     Task ai_agent_background.execute_workflow[cec594b5-f664-4365-a85a-4b6573558ce6] received
+[2025-10-12 15:14:03] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-12T12:14:03.325976Z"}
+[2025-10-12 15:14:03] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-12T12:14:03.333530Z"}
+[2025-10-12 15:14:03] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-12T12:14:03.334337Z"}
+[2025-10-12 15:14:03] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-12 15:19:57] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-12T12:19:57.091521Z"}
+[2025-10-12 15:19:57] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-12T12:19:57.092290Z"}
+[2025-10-12 15:19:57] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-12T12:19:57.092472Z"}
+[2025-10-12 15:19:57] INFO     celery@MacBookPro ready.
+[2025-10-12 15:20:02] INFO     Task ai_agent_background.process_monday_webhook[1d4f0da9-e79e-449e-b122-66603168a469] received
+[2025-10-12 15:20:03] INFO     Task ai_agent_background.execute_workflow[457cad31-c648-45b2-a73e-d3f6ddbbff82] received
+[2025-10-12 15:21:56] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-12T12:21:56.622745Z"}
+[2025-10-12 15:21:56] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-12T12:21:56.635944Z"}
+[2025-10-12 15:21:56] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-12T12:21:56.641174Z"}
+[2025-10-12 15:21:57] ERROR    Task handler raised error: WorkerLostError('Worker exited prematurely: signal 15 (SIGTERM) Job: 1.')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.einfo.ExceptionWithTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 86, in asynloop
+    state.maybe_shutdown()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/state.py", line 93, in maybe_shutdown
+    raise WorkerShutdown(should_stop)
+celery.exceptions.WorkerShutdown: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 15 (SIGTERM) Job: 1.
+"""
+[2025-10-12 15:30:19] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-12T12:30:19.926059Z"}
+[2025-10-12 15:30:19] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-12T12:30:19.929282Z"}
+[2025-10-12 15:30:19] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-12T12:30:19.930335Z"}
+[2025-10-12 15:30:19] INFO     celery@MacBookPro ready.
+[2025-10-12 15:30:25] INFO     Task ai_agent_background.process_monday_webhook[2a110774-5f94-4fac-91e6-f9eb3b4db392] received
+[2025-10-12 15:30:27] INFO     Task ai_agent_background.execute_workflow[18726e93-64d5-4f82-abfd-59b35726c1b0] received
+[2025-10-12 15:42:49] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-12T12:42:49.093824Z"}
+[2025-10-12 15:42:49] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-12T12:42:49.095608Z"}
+[2025-10-12 15:42:49] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-12T12:42:49.095899Z"}
+[2025-10-12 15:52:01] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-12T12:52:01.430159Z"}
+[2025-10-12 15:52:01] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-12T12:52:01.430841Z"}
+[2025-10-12 15:52:01] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-12T12:52:01.430998Z"}
+[2025-10-12 15:52:01] INFO     celery@MacBookPro ready.
+[2025-10-12 15:52:08] INFO     Task ai_agent_background.process_monday_webhook[1070e0ce-3d98-4d21-ae52-a4a0067439a6] received
+[2025-10-12 15:52:11] INFO     Task ai_agent_background.execute_workflow[a08fc13b-1d70-4992-b147-8f99fb2e93cb] received
+[2025-10-12 16:07:04] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-12T13:07:04.691858Z"}
+[2025-10-12 16:07:04] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-12T13:07:04.695577Z"}
+[2025-10-12 16:07:04] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-12T13:07:04.695901Z"}
+[2025-10-12 16:15:35] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-12T13:15:35.789250Z"}
+[2025-10-12 16:15:35] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-12T13:15:35.789923Z"}
+[2025-10-12 16:15:35] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-12T13:15:35.790116Z"}
+[2025-10-12 16:15:35] INFO     celery@MacBookPro ready.
+[2025-10-12 16:15:41] INFO     Task ai_agent_background.process_monday_webhook[3f46be55-3898-4188-9752-4709310a220d] received
+[2025-10-12 16:15:44] INFO     Task ai_agent_background.execute_workflow[f7b6513b-591b-4d05-95f9-cd471a9338fd] received
+[2025-10-14 09:55:15] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-14T06:55:15.515563Z"}
+[2025-10-14 09:55:15] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-14T06:55:15.519268Z"}
+[2025-10-14 09:55:15] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-14T06:55:15.519666Z"}
+[2025-10-14 11:31:03] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-14T08:31:03.998483Z"}
+[2025-10-14 11:31:03] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-14T08:31:03.999009Z"}
+[2025-10-14 11:31:03] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-14T08:31:03.999143Z"}
+[2025-10-14 11:31:03] INFO     celery@MacBookPro ready.
+[2025-10-14 11:31:10] INFO     Task ai_agent_background.process_monday_webhook[4cf0707c-36d2-4a4c-ac8b-b05deb0ac9a8] received
+[2025-10-14 11:31:14] INFO     Task ai_agent_background.execute_workflow[3fe9a0d6-8d75-4ed2-b5fd-56b3484cc84e] received
+[2025-10-14 11:46:33] WARNING  {"event": "🛑 Arrêt du monitoring", "level": "info", "timestamp": "2025-10-14T08:46:33.784556Z"}
+[2025-10-14 11:46:33] WARNING  {"event": "✅ Monitoring arrêté proprement", "level": "info", "timestamp": "2025-10-14T08:46:33.787857Z"}
+[2025-10-14 11:46:33] WARNING  {"event": "✅ Monitoring finalisé", "level": "info", "timestamp": "2025-10-14T08:46:33.788349Z"}
+[2025-10-17 09:34:36] WARNING  {"event": "📊 Logging Celery configuré: logs (env: development)", "level": "info", "timestamp": "2025-10-17T06:34:36.262192Z"}
+[2025-10-17 09:34:36] WARNING  {"event": "✅ Logging Celery configuré de manière robuste", "level": "info", "timestamp": "2025-10-17T06:34:36.262794Z"}
+[2025-10-17 09:34:36] WARNING  {"event": "📊 Logs: logs (development)", "level": "info", "timestamp": "2025-10-17T06:34:36.262910Z"}
+[2025-10-17 09:34:36] INFO     celery@MacBookPro ready.
+[2025-10-17 09:35:25] INFO     Task ai_agent_background.process_monday_webhook[10bf1ec1-da05-4c9e-a3b1-1673313f6237] received
+[2025-10-17 09:35:28] INFO     Task ai_agent_background.execute_workflow[763fa8c4-bf17-4a45-97b7-8fd95b0fe12e] received
+[2025-10-19 19:20:38] WARNING  consumer: Connection to broker lost. Trying to re-establish the connection...
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 742, in start
+    c.loop(*c.loop_args())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/loops.py", line 97, in asynloop
+    next(loop)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/kombu/asynchronous/hub.py", line 373, in create_loop
+    cb(*cbargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/kombu/transport/base.py", line 248, in on_readable
+    reader(loop)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/kombu/transport/base.py", line 230, in _read
+    drain_events(timeout=0)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/amqp/connection.py", line 526, in drain_events
+    while not self.blocking_read(timeout):
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/amqp/connection.py", line 532, in blocking_read
+    return self.on_inbound_frame(frame)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/amqp/method_framing.py", line 53, in on_frame
+    callback(channel, method_sig, buf, None)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/amqp/connection.py", line 538, in on_inbound_method
+    return self.channels[channel_id].dispatch_method(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/amqp/abstract_channel.py", line 156, in dispatch_method
+    listener(*args)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/amqp/connection.py", line 668, in _on_close
+    raise error_for_code(reply_code, reply_text,
+amqp.exceptions.ConnectionForced: (0, 0): (320) CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'
+[2025-10-19 19:20:38] ERROR    consumer: Cannot connect to amqp://ai_agent_user:**@127.0.0.1:5672/ai_agent: [Errno 54] Connection reset by peer.
+Trying again in 2.00 seconds... (1/10)
+
+[2025-10-19 19:20:40] ERROR    consumer: Cannot connect to amqp://ai_agent_user:**@127.0.0.1:5672/ai_agent: [Errno 54] Connection reset by peer.
+Trying again in 4.00 seconds... (2/10)
+
+[2025-10-19 19:20:44] ERROR    consumer: Cannot connect to amqp://ai_agent_user:**@127.0.0.1:5672/ai_agent: [Errno 54] Connection reset by peer.
+Trying again in 6.00 seconds... (3/10)
+
+[2025-10-19 19:20:50] ERROR    consumer: Cannot connect to amqp://ai_agent_user:**@127.0.0.1:5672/ai_agent: [Errno 61] Connection refused.
+Trying again in 8.00 seconds... (4/10)
+
+[2025-10-19 19:20:58] ERROR    consumer: Cannot connect to amqp://ai_agent_user:**@127.0.0.1:5672/ai_agent: [Errno 61] Connection refused.
+Trying again in 10.00 seconds... (5/10)
+
+[2025-10-19 19:21:08] ERROR    consumer: Cannot connect to amqp://ai_agent_user:**@127.0.0.1:5672/ai_agent: [Errno 61] Connection refused.
+Trying again in 12.00 seconds... (6/10)
+
+[2025-10-19 19:21:21] ERROR    consumer: Cannot connect to amqp://ai_agent_user:**@127.0.0.1:5672/ai_agent: [Errno 61] Connection refused.
+Trying again in 14.00 seconds... (7/10)
+
+[2025-10-19 19:21:35] ERROR    consumer: Cannot connect to amqp://ai_agent_user:**@127.0.0.1:5672/ai_agent: [Errno 61] Connection refused.
+Trying again in 16.00 seconds... (8/10)
+
+[2025-10-19 19:21:51] ERROR    consumer: Cannot connect to amqp://ai_agent_user:**@127.0.0.1:5672/ai_agent: [Errno 61] Connection refused.
+Trying again in 18.00 seconds... (9/10)
+
+[2025-10-19 19:22:09] ERROR    consumer: Cannot connect to amqp://ai_agent_user:**@127.0.0.1:5672/ai_agent: [Errno 61] Connection refused.
+Trying again in 20.00 seconds... (10/10)
+
+[2025-10-19 19:22:29] CRITICAL Unrecoverable error: OperationalError('[Errno 61] Connection refused')
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/kombu/connection.py", line 472, in _reraise_as_library_errors
+    yield
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/kombu/connection.py", line 459, in _ensure_connection
+    return retry_over_time(
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/kombu/utils/functional.py", line 318, in retry_over_time
+    return fun(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/kombu/connection.py", line 934, in _connection_factory
+    self._connection = self._establish_connection()
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/kombu/connection.py", line 860, in _establish_connection
+    conn = self.transport.establish_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/kombu/transport/pyamqp.py", line 203, in establish_connection
+    conn.connect()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/amqp/connection.py", line 324, in connect
+    self.transport.connect()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/amqp/transport.py", line 129, in connect
+    self._connect(self.host, self.port, self.connect_timeout)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/amqp/transport.py", line 184, in _connect
+    self.sock.connect(sa)
+ConnectionRefusedError: [Errno 61] Connection refused
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/connection.py", line 21, in start
+    c.connection = c.connect()
+                   ^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 469, in connect
+    conn = self.connection_for_read(heartbeat=self.amqheartbeat)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 475, in connection_for_read
+    return self.ensure_connected(
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/celery/worker/consumer/consumer.py", line 526, in ensure_connected
+    conn = conn.ensure_connection(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/kombu/connection.py", line 406, in ensure_connection
+    self._ensure_connection(*args, **kwargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/kombu/connection.py", line 458, in _ensure_connection
+    with ctx():
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 155, in __exit__
+    self.gen.throw(value)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/kombu/connection.py", line 476, in _reraise_as_library_errors
+    raise ConnectionError(str(exc)) from exc
+kombu.exceptions.OperationalError: [Errno 61] Connection refused

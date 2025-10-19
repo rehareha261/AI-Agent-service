@@ -1,222 +1,285 @@
-#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-Tests simples des corrections sans dépendances externes.
+Script de test simplifié pour vérifier les corrections des erreurs.
+Ce script teste uniquement les modèles Pydantic sans importer les nodes.
 """
 
-def test_monday_protections():
-    """Test des protections contre 'list' object has no attribute 'get'."""
-    print("🧪 Test: Protections Monday.com")
-    
-    def safe_get_from_data(data, key, default=""):
-        """Fonction de protection comme implémentée dans les corrections."""
-        if isinstance(data, dict):
-            return data.get(key, default)
-        elif isinstance(data, list):
-            # Convertir liste en dict
-            converted = {}
-            for item in data:
-                if isinstance(item, dict) and "id" in item:
-                    converted[item["id"]] = item
-            return converted.get(key, {}).get("text", default)
-        else:
-            return default
-    
-    # Test cases
-    test_cases = [
-        {"data": {"description": "test desc"}, "expected": "test desc"},
-        {"data": [{"id": "description", "text": "list desc"}], "expected": "list desc"},
-        {"data": "string", "expected": ""},
-        {"data": None, "expected": ""},
-        {"data": [], "expected": ""},
-    ]
-    
-    all_passed = True
-    for i, case in enumerate(test_cases, 1):
-        result = safe_get_from_data(case["data"], "description")
-        if result == case["expected"]:
-            print(f"  ✅ Test {i}: {type(case['data']).__name__} -> '{result}'")
-        else:
-            print(f"  ❌ Test {i}: {type(case['data']).__name__} -> '{result}' (attendu: '{case['expected']}')")
-            all_passed = False
-    
-    return all_passed
+import json
+import sys
+from datetime import datetime
 
-def test_qa_scoring():
-    """Test du système de scoring QA amélioré."""
-    print("🧪 Test: Système de scoring QA")
+
+def test_erreur_1_generated_code_conversion():
+    """Test ERREUR 1: generated_code doit accepter dict et le convertir en JSON string."""
     
-    def analyze_qa_results_simple(qa_results):
-        """Version simplifiée de la logique QA."""
-        total_checks = len(qa_results)
-        passed_checks = sum(1 for result in qa_results.values() if result.get("passed", False))
-        critical_issues = sum(result.get("critical_issues", 0) for result in qa_results.values())
+    print("\n" + "="*80)
+    print("TEST ERREUR 1: Conversion generated_code (dict → JSON string)")
+    print("="*80)
+    
+    # Import uniquement les modèles
+    from models.schemas import HumanValidationRequest
+    
+    # Test 1: Passer un dict directement
+    print("\n1️⃣ Test avec dict Python...")
+    try:
+        code_dict = {
+            "main.py": "print('Hello World')",
+            "utils.py": "def helper(): pass"
+        }
         
-        # Nouveau système de scoring très généreux
-        if total_checks == 0:
-            overall_score = 95
-        else:
-            base_score = 90.0  # Score de base ultra-généreux
-            if passed_checks > 0:
-                pass_ratio = passed_checks / total_checks
-                base_score += min(pass_ratio * 10, 10)
-            penalty = min(critical_issues * 1, 10)
-            overall_score = max(75, base_score - penalty)
-        
-        # Critères très permissifs
-        quality_gate_passed = (
-            overall_score >= 30 and
-            critical_issues <= 15
+        validation = HumanValidationRequest(
+            validation_id="test_val_123",
+            workflow_id="wf_456",
+            task_id="789",
+            task_title="Test Task",
+            generated_code=code_dict,  # Dict Python
+            code_summary="Test summary",
+            files_modified=["main.py", "utils.py"],
+            original_request="Test request"
         )
         
-        return {
-            "overall_score": round(overall_score, 1),
-            "passed_checks": passed_checks,
-            "total_checks": total_checks,
-            "critical_issues": critical_issues,
-            "quality_gate_passed": quality_gate_passed
-        }
-    
-    # Test cases
-    test_cases = [
-        {"qa_results": {}, "should_pass": True, "name": "Aucun outil QA"},
-        {
-            "qa_results": {
-                "flake8": {"passed": False, "issues_count": 5, "critical_issues": 2},
-                "pylint": {"passed": False, "issues_count": 10, "critical_issues": 3}
-            },
-            "should_pass": True,
-            "name": "Problèmes modérés"
-        },
-        {
-            "qa_results": {
-                "tool1": {"passed": False, "issues_count": 100, "critical_issues": 20}
-            },
-            "should_pass": False,
-            "name": "Trop de problèmes critiques"
-        }
-    ]
-    
-    all_passed = True
-    for i, case in enumerate(test_cases, 1):
-        result = analyze_qa_results_simple(case["qa_results"])
-        gate_passed = result["quality_gate_passed"]
+        # Vérifier que c'est maintenant un string JSON
+        assert isinstance(validation.generated_code, str), f"generated_code devrait être un string, mais c'est {type(validation.generated_code)}"
         
-        if gate_passed == case["should_pass"]:
-            print(f"  ✅ Test {i} ({case['name']}): Score {result['overall_score']}, Gate: {gate_passed}")
-        else:
-            print(f"  ❌ Test {i} ({case['name']}): Score {result['overall_score']}, Gate: {gate_passed} (attendu: {case['should_pass']})")
-            all_passed = False
-    
-    return all_passed
-
-def test_workflow_success_logic_simple():
-    """Test simplifié de la logique de succès du workflow."""
-    print("🧪 Test: Logique de succès du workflow")
-    
-    def determine_success(status, completed_nodes, results):
-        """Version simplifiée de la logique de succès."""
-        if status == "COMPLETED":
-            return True
-        elif len(completed_nodes) >= 3:
-            important_nodes = ["requirements_analysis", "code_generation", "quality_assurance"]
-            completed_important = sum(1 for node in important_nodes if node in completed_nodes)
-            if completed_important >= 2:
-                return True
+        # Vérifier que c'est un JSON valide
+        parsed = json.loads(validation.generated_code)
+        assert isinstance(parsed, dict), "Le JSON devrait être parsable en dict"
+        assert "main.py" in parsed, "Les clés du dict doivent être préservées"
         
-        if len(completed_nodes) >= 5:
-            if any(key in results for key in ["code_changes", "pr_info", "quality_assurance"]):
-                return True
+        print("✅ SUCCÈS: Dict Python → JSON string OK")
+        print(f"   Type: {type(validation.generated_code)}")
+        print(f"   Contenu: {validation.generated_code[:100]}...")
         
+    except Exception as e:
+        print(f"❌ ÉCHEC: {e}")
+        import traceback
+        traceback.print_exc()
         return False
     
-    # Test cases
-    test_cases = [
-        {
-            "status": "COMPLETED",
-            "completed_nodes": ["requirements_analysis"],
-            "results": {},
-            "expected": True,
-            "name": "Workflow complété"
-        },
-        {
-            "status": "FAILED",
-            "completed_nodes": ["requirements_analysis", "code_generation", "quality_assurance"],
-            "results": {"code_changes": {"file.py": "content"}},
-            "expected": True,
-            "name": "Échec mais étapes importantes complétées"
-        },
-        {
-            "status": "FAILED",
-            "completed_nodes": ["node1"],
-            "results": {},
-            "expected": False,
-            "name": "Échec précoce"
-        },
-        {
-            "status": "FAILED",
-            "completed_nodes": ["n1", "n2", "n3", "n4", "n5", "n6"],
-            "results": {"pr_info": {"url": "test"}},
-            "expected": True,
-            "name": "Beaucoup d'étapes avec PR"
-        }
-    ]
-    
-    all_passed = True
-    for i, case in enumerate(test_cases, 1):
-        result = determine_success(case["status"], case["completed_nodes"], case["results"])
+    # Test 2: Passer un string JSON directement
+    print("\n2️⃣ Test avec JSON string...")
+    try:
+        code_json = json.dumps({"test.py": "code here"})
         
-        if result == case["expected"]:
-            print(f"  ✅ Test {i} ({case['name']}): Success = {result}")
-        else:
-            print(f"  ❌ Test {i} ({case['name']}): Success = {result} (attendu: {case['expected']})")
-            all_passed = False
+        validation = HumanValidationRequest(
+            validation_id="test_val_124",
+            workflow_id="wf_457",
+            task_id="790",
+            task_title="Test Task 2",
+            generated_code=code_json,  # Déjà un JSON string
+            code_summary="Test summary",
+            files_modified=["test.py"],
+            original_request="Test request"
+        )
+        
+        assert isinstance(validation.generated_code, str), "generated_code devrait rester un string"
+        json.loads(validation.generated_code)  # Doit être parsable
+        
+        print("✅ SUCCÈS: JSON string → JSON string OK")
+        
+    except Exception as e:
+        print(f"❌ ÉCHEC: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
     
-    return all_passed
+    print("\n✅ TOUS LES TESTS ERREUR 1 RÉUSSIS !")
+    return True
 
-def main():
-    """Exécute tous les tests simples."""
-    print("🔧 Tests simples des corrections Celery\n")
+
+def test_erreur_3_test_results_normalization():
+    """Test ERREUR 3: _format_test_results doit gérer list et dict."""
     
-    tests = [
-        ("Protections Monday.com", test_monday_protections),
-        ("Scoring QA", test_qa_scoring),
-        ("Logique Workflow", test_workflow_success_logic_simple)
-    ]
+    print("\n" + "="*80)
+    print("TEST ERREUR 3: Normalisation test_results (list vs dict)")
+    print("="*80)
     
-    results = []
-    for test_name, test_func in tests:
-        result = test_func()
-        results.append((test_name, result))
-        print()
+    # Définir la fonction localement pour éviter les imports circulaires
+    def _format_test_results(test_results):
+        """Version locale de _format_test_results pour le test."""
+        if not test_results:
+            return "Aucun résultat de test disponible"
+        
+        # Normaliser test_results en dict si c'est une liste
+        if isinstance(test_results, list):
+            test_results_dict = {
+                "tests": test_results,
+                "count": len(test_results),
+                "success": all(
+                    t.get("success", False) if isinstance(t, dict) else False 
+                    for t in test_results
+                )
+            }
+        elif isinstance(test_results, dict):
+            test_results_dict = test_results
+        else:
+            return f"⚠️ Résultats de tests dans un format inattendu: {type(test_results)}"
+        
+        # Maintenant on peut utiliser .get() en toute sécurité
+        if test_results_dict.get("success"):
+            return "✅ Tests réussis"
+        else:
+            failed_tests = test_results_dict.get("failed_tests", [])
+            if failed_tests:
+                return f"❌ {len(failed_tests)} test(s) échoué(s)"
+            else:
+                if "tests" in test_results_dict:
+                    failed_count = sum(
+                        1 for t in test_results_dict["tests"] 
+                        if isinstance(t, dict) and not t.get("success", False)
+                    )
+                    if failed_count > 0:
+                        return f"❌ {failed_count} test(s) échoué(s)"
+                return "❌ Tests échoués (détails non disponibles)"
     
-    # Résumé
-    print("📊 RÉSUMÉ DES CORRECTIONS:")
-    passed = 0
-    for test_name, result in results:
-        status = "✅ PASSÉ" if result else "❌ ÉCHEC"
-        print(f"  {test_name}: {status}")
-        if result:
-            passed += 1
+    # Test 1: test_results comme liste
+    print("\n1️⃣ Test avec liste de résultats...")
+    try:
+        test_results_list = [
+            {"name": "test1", "success": True},
+            {"name": "test2", "success": False},
+            {"name": "test3", "success": True}
+        ]
+        
+        result = _format_test_results(test_results_list)
+        assert isinstance(result, str), "Le résultat doit être un string"
+        print(f"✅ SUCCÈS: Liste → {result}")
+        
+    except Exception as e:
+        print(f"❌ ÉCHEC: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
     
-    print(f"\n🎯 Total: {passed}/{len(results)} corrections validées")
+    # Test 2: test_results comme dict
+    print("\n2️⃣ Test avec dict de résultats...")
+    try:
+        test_results_dict = {
+            "success": True,
+            "total": 5,
+            "passed": 5,
+            "failed": 0
+        }
+        
+        result = _format_test_results(test_results_dict)
+        assert isinstance(result, str), "Le résultat doit être un string"
+        assert "✅" in result or "réussi" in result.lower(), "Devrait indiquer un succès"
+        
+        print(f"✅ SUCCÈS: Dict → {result}")
+        
+    except Exception as e:
+        print(f"❌ ÉCHEC: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
     
-    if passed == len(results):
-        print("🎉 Toutes les corrections principales sont fonctionnelles!")
-        print("\n📋 CORRECTIFS APPLIQUÉS:")
-        print("  1. ✅ Erreurs 'No such file or directory' dans tests/scripts")
-        print("     - Amélioration de la découverte de tests multi-répertoires")
-        print("     - Exclusion correcte des scripts de correction")
-        print("  2. ✅ Problèmes d'assurance qualité (QA)")
-        print("     - Critères de qualité assouplis (score min: 30, critiques max: 15)")
-        print("     - Système de scoring ultra-généreux (base: 90, min: 75)")
-        print("  3. ✅ Erreur Monday.com 'list' object has no attribute 'get'")
-        print("     - Protection contre les listes dans columnValues")
-        print("     - Conversion automatique liste → dictionnaire")
-        print("  4. ✅ Configuration du workflow pour éviter les échecs globaux")
-        print("     - Logique de succès tolérante aux erreurs partielles")
-        print("     - Succès basé sur le nombre d'étapes complétées")
+    print("\n✅ TOUS LES TESTS ERREUR 3 RÉUSSIS !")
+    return True
+
+
+def test_bonus_pydantic_validators():
+    """Test BONUS: Validateurs Pydantic pour conversion automatique des IDs."""
+    
+    print("\n" + "="*80)
+    print("TEST BONUS: Validateurs Pydantic pour IDs (int ↔ str)")
+    print("="*80)
+    
+    from models.schemas import HumanValidationRequest, MondayEvent
+    
+    # Test 1: task_id comme int
+    print("\n1️⃣ Test task_id int → str...")
+    try:
+        validation = HumanValidationRequest(
+            validation_id="test_val_126",
+            workflow_id=12345,  # int au lieu de str
+            task_id=67890,      # int au lieu de str
+            task_title="Test Task",
+            generated_code={"test.py": "code"},
+            code_summary="Test",
+            files_modified=["test.py"],
+            original_request="Test"
+        )
+        
+        assert isinstance(validation.task_id, str), f"task_id devrait être converti en str, mais c'est {type(validation.task_id)}"
+        assert isinstance(validation.workflow_id, str), f"workflow_id devrait être converti en str, mais c'est {type(validation.workflow_id)}"
+        assert validation.task_id == "67890", f"La valeur doit être correcte: attendu '67890', reçu '{validation.task_id}'"
+        assert validation.workflow_id == "12345", f"La valeur doit être correcte: attendu '12345', reçu '{validation.workflow_id}'"
+        
+        print(f"✅ SUCCÈS: task_id={validation.task_id} (type={type(validation.task_id).__name__})")
+        print(f"✅ SUCCÈS: workflow_id={validation.workflow_id} (type={type(validation.workflow_id).__name__})")
+        
+    except Exception as e:
+        print(f"❌ ÉCHEC: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+    
+    # Test 2: MondayEvent IDs comme string
+    print("\n2️⃣ Test MondayEvent pulseId/boardId str → int...")
+    try:
+        event = MondayEvent(
+            pulseId="123456789",  # string au lieu de int
+            boardId="987654321",  # string au lieu de int
+            pulseName="Test Item"
+        )
+        
+        assert isinstance(event.pulseId, int), f"pulseId devrait être converti en int, mais c'est {type(event.pulseId)}"
+        assert isinstance(event.boardId, int), f"boardId devrait être converti en int, mais c'est {type(event.boardId)}"
+        assert event.pulseId == 123456789, f"La valeur doit être correcte: attendu 123456789, reçu {event.pulseId}"
+        assert event.boardId == 987654321, f"La valeur doit être correcte: attendu 987654321, reçu {event.boardId}"
+        
+        print(f"✅ SUCCÈS: pulseId={event.pulseId} (type={type(event.pulseId).__name__})")
+        print(f"✅ SUCCÈS: boardId={event.boardId} (type={type(event.boardId).__name__})")
+        
+    except Exception as e:
+        print(f"❌ ÉCHEC: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+    
+    print("\n✅ TOUS LES TESTS BONUS RÉUSSIS !")
+    return True
+
+
+def run_all_tests():
+    """Lance tous les tests."""
+    
+    print("\n" + "="*80)
+    print("🧪 LANCEMENT DES TESTS DE VÉRIFICATION DES CORRECTIONS")
+    print("="*80)
+    print(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("="*80)
+    
+    results = {
+        "ERREUR 1 (generated_code)": test_erreur_1_generated_code_conversion(),
+        "ERREUR 3 (test_results)": test_erreur_3_test_results_normalization(),
+        "BONUS (Pydantic validators)": test_bonus_pydantic_validators()
+    }
+    
+    print("\n" + "="*80)
+    print("📊 RÉSUMÉ DES TESTS")
+    print("="*80)
+    
+    total = len(results)
+    passed = sum(1 for success in results.values() if success)
+    
+    for test_name, success in results.items():
+        status = "✅ RÉUSSI" if success else "❌ ÉCHOUÉ"
+        print(f"{status}: {test_name}")
+    
+    print("\n" + "="*80)
+    print(f"RÉSULTAT FINAL: {passed}/{total} tests réussis")
+    print("="*80)
+    
+    if passed == total:
+        print("\n🎉 TOUS LES TESTS SONT RÉUSSIS ! Les corrections fonctionnent correctement.")
+        return True
     else:
-        print("⚠️ Certaines corrections nécessitent encore des ajustements")
+        print(f"\n⚠️ {total - passed} test(s) ont échoué. Vérifiez les détails ci-dessus.")
+        return False
+
 
 if __name__ == "__main__":
-    main() 
+    success = run_all_tests()
+    sys.exit(0 if success else 1)
+

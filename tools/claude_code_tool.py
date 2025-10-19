@@ -7,9 +7,10 @@ import subprocess
 import time
 import shutil
 from datetime import datetime
-from typing import Any, Dict, Optional, List, Union
+from typing import Any, Dict, Optional, List, Union, Tuple
 from pydantic import Field
 from anthropic import Client
+from openai import OpenAI
 
 from .base_tool import BaseTool
 from models.schemas import TestResult
@@ -17,12 +18,12 @@ from config.langsmith_config import langsmith_config
 
 
 class ClaudeCodeTool(BaseTool):
-    """Outil pour l'écriture et la modification de code avec Claude."""
+    """Outil pour l'écriture et la modification de code avec Anthropic Claude (fallback OpenAI)."""
     
     name: str = "claude_code_tool"
     description: str = """
     Outil pour écrire, modifier et tester du code.
-    Utilise Claude pour générer du code de qualité.
+    Utilise Anthropic Claude comme provider principal avec fallback automatique vers OpenAI.
     
     Fonctionnalités:
     - Lire des fichiers de code
@@ -33,11 +34,87 @@ class ClaudeCodeTool(BaseTool):
     """
     
     anthropic_client: Optional[Client] = Field(default=None)
+    openai_client: Optional[OpenAI] = Field(default=None)
     working_directory: Optional[str] = Field(default=None)
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.anthropic_client = Client(api_key=self.settings.anthropic_api_key)
+        # Initialiser OpenAI client si la clé est disponible (fallback)
+        if self.settings.openai_api_key:
+            self.openai_client = OpenAI(api_key=self.settings.openai_api_key)
+        else:
+            self.openai_client = None
+    
+    def _call_llm_with_fallback(self, prompt: str, max_tokens: int = 4000) -> Tuple[str, str, Dict]:
+        """
+        Appelle le LLM avec fallback automatique Anthropic → OpenAI.
+        
+        Returns:
+            Tuple[content, provider_used, metadata]
+        """
+        # Tentative 1: Anthropic
+        try:
+            self.logger.info("🚀 Tentative avec Anthropic...")
+            start_time = time.time()
+            response = self.anthropic_client.messages.create(
+                model="claude-3-5-sonnet-20241022",
+                max_tokens=max_tokens,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            latency_ms = int((time.time() - start_time) * 1000)
+            
+            content = response.content[0].text.strip()
+            
+            metadata = {
+                "provider": "anthropic",
+                "model": "claude-3-5-sonnet-20241022",
+                "latency_ms": latency_ms,
+                "input_tokens": response.usage.input_tokens if hasattr(response, 'usage') else 0,
+                "output_tokens": response.usage.output_tokens if hasattr(response, 'usage') else 0,
+                "cost_per_input_token": 0.000003,
+                "cost_per_output_token": 0.000015
+            }
+            
+            self.logger.info(f"✅ Anthropic réussi ({latency_ms}ms)")
+            return content, "anthropic", metadata
+            
+        except Exception as e:
+            self.logger.warning(f"⚠️ Anthropic échoué: {e}")
+            
+            # Tentative 2: OpenAI fallback
+            if self.openai_client:
+                try:
+                    self.logger.info("🔄 Fallback vers OpenAI...")
+                    start_time = time.time()
+                    response = self.openai_client.chat.completions.create(
+                        model="gpt-4o",
+                        max_tokens=max_tokens,
+                        messages=[{"role": "user", "content": prompt}]
+                    )
+                    latency_ms = int((time.time() - start_time) * 1000)
+                    
+                    content = response.choices[0].message.content.strip()
+                    
+                    metadata = {
+                        "provider": "openai",
+                        "model": "gpt-4o",
+                        "latency_ms": latency_ms,
+                        "input_tokens": response.usage.prompt_tokens if hasattr(response, 'usage') else 0,
+                        "output_tokens": response.usage.completion_tokens if hasattr(response, 'usage') else 0,
+                        "cost_per_input_token": 0.000005,
+                        "cost_per_output_token": 0.000015
+                    }
+                    
+                    self.logger.info(f"✅ OpenAI fallback réussi ({latency_ms}ms)")
+                    return content, "openai", metadata
+                    
+                except Exception as e2:
+                    self.logger.error(f"❌ OpenAI fallback échoué: {e2}")
+                    raise Exception(f"Anthropic et OpenAI ont échoué. Anthropic: {e}, OpenAI: {e2}")
+            else:
+                self.logger.error("❌ Pas de fallback OpenAI disponible (clé manquante)")
+                raise Exception(f"Anthropic échoué et pas de fallback OpenAI: {e}")
     
     async def _arun(self, action: str, **kwargs) -> Dict[str, Any]:
         """Exécute une action avec Claude Code."""
@@ -176,94 +253,84 @@ Contexte supplémentaire:
 Réponds UNIQUEMENT avec le nouveau contenu complet du fichier, sans explication.
 """
             
-            # Appeler Claude avec tracking du temps
-            start_time = time.time()
-            response = self.anthropic_client.messages.create(
-                model="claude-3-5-sonnet-20241022",
-                max_tokens=4000,
-                messages=[{"role": "user", "content": prompt}]
+            # Appeler LLM avec fallback automatique
+            new_content, provider_used, metadata = self._call_llm_with_fallback(prompt, max_tokens=4000)
+            
+            # Extraire les métadonnées
+            latency_ms = metadata.get("latency_ms", 0)
+            input_tokens = metadata.get("input_tokens", 0)
+            output_tokens = metadata.get("output_tokens", 0)
+            total_tokens = input_tokens + output_tokens
+            
+            # Calculer le coût basé sur le provider utilisé
+            cost_per_input = metadata.get("cost_per_input_token", 0)
+            cost_per_output = metadata.get("cost_per_output_token", 0)
+            estimated_cost = (input_tokens * cost_per_input) + (output_tokens * cost_per_output)
+            
+            token_usage = {
+                "prompt_tokens": input_tokens,
+                "completion_tokens": output_tokens,
+                "total_tokens": total_tokens
+            }
+            
+            # Log au monitoring pour agrégation
+            workflow_id = context.get("workflow_id", "unknown")
+            task_id = context.get("task_id", "unknown")
+            
+            # Import local pour éviter les imports circulaires
+            from services.cost_monitoring_service import cost_monitor
+            from services.monitoring_service import monitoring_dashboard
+            await cost_monitor.log_ai_usage(
+                workflow_id=workflow_id,
+                task_id=task_id,
+                provider=provider_used,
+                model=metadata.get("model"),
+                operation="modify_file",
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                estimated_cost=estimated_cost,
+                success=True
             )
-            latency_ms = int((time.time() - start_time) * 1000)
             
-            new_content = response.content[0].text.strip()
-            
-            # Calculer les tokens et coût
-            token_usage = {}
-            total_tokens = 0
-            estimated_cost = 0.0
-            
-            if hasattr(response, 'usage') and response.usage:
-                input_tokens = response.usage.input_tokens or 0
-                output_tokens = response.usage.output_tokens or 0
-                total_tokens = input_tokens + output_tokens
-                
-                # Tarification Claude 3.5 Sonnet
-                estimated_cost = (input_tokens * 0.000003) + (output_tokens * 0.000015)
-                
-                token_usage = {
-                    "prompt_tokens": input_tokens,
-                    "completion_tokens": output_tokens,
-                    "total_tokens": total_tokens
-                }
-                
-                # Log au monitoring pour agrégation
-                workflow_id = context.get("workflow_id", "unknown")
-                task_id = context.get("task_id", "unknown")
-                
-                # Import local pour éviter les imports circulaires
-                from services.cost_monitoring_service import cost_monitor
-                from services.monitoring_service import monitoring_dashboard
-                await cost_monitor.log_ai_usage(
-                    workflow_id=workflow_id,
-                    task_id=task_id,
-                    provider="claude",
-                    model="claude-3-5-sonnet",
-                    operation="modify_file",
-                    input_tokens=input_tokens,
-                    output_tokens=output_tokens,
-                    estimated_cost=estimated_cost,
-                    success=True
-                )
-                
-                # Tracer avec LangSmith si configuré
-                if langsmith_config.client:
-                    try:
-                        langsmith_config.client.create_run(
-                            name=f"claude_modify_file_{file_path.split('/')[-1]}",
-                            run_type="llm",
-                            inputs={
-                                "file_path": file_path,
-                                "description": description,
-                                "prompt_tokens": input_tokens,
-                                "completion_tokens": output_tokens
-                            },
-                            outputs={
-                                "success": True,
-                                "estimated_cost": estimated_cost,
-                                "content_length": len(new_content)
-                            },
-                            session_name=context.get("langsmith_session"),
-                            extra={
-                                "model": "claude-3-5-sonnet-20241022",
-                                "provider": "claude",
-                                "workflow_id": workflow_id
-                            }
-                        )
-                    except Exception as e:
-                        self.logger.warning(f"⚠️ Erreur LangSmith tracing: {e}")
-                
-                # Sauvegarder l'interaction en base (si run_step_id disponible)
-                run_step_id = context.get("run_step_id")
-                if run_step_id:
-                    await monitoring_dashboard.save_ai_interaction(
-                        run_step_id=run_step_id,
-                        provider="claude",
-                        model_name="claude-3-5-sonnet-20241022", 
-                        prompt=prompt,
-                        response=new_content,
-                        token_usage=token_usage,
-                        latency_ms=latency_ms
+            # Tracer avec LangSmith si configuré
+            if langsmith_config.client:
+                try:
+                    langsmith_config.client.create_run(
+                        name=f"{provider_used}_modify_file_{file_path.split('/')[-1]}",
+                        run_type="llm",
+                        inputs={
+                            "file_path": file_path,
+                            "description": description,
+                            "prompt_tokens": input_tokens,
+                            "completion_tokens": output_tokens
+                        },
+                        outputs={
+                            "success": True,
+                            "estimated_cost": estimated_cost,
+                            "content_length": len(new_content)
+                        },
+                        session_name=context.get("langsmith_session"),
+                        extra={
+                            "model": metadata.get("model"),
+                            "provider": provider_used,
+                            "workflow_id": workflow_id
+                        }
                     )
+                except Exception as e:
+                    self.logger.warning(f"⚠️ Erreur LangSmith tracing: {e}")
+            
+            # Sauvegarder l'interaction en base (si run_step_id disponible)
+            run_step_id = context.get("run_step_id")
+            if run_step_id:
+                await monitoring_dashboard.save_ai_interaction(
+                    run_step_id=run_step_id,
+                    provider=provider_used,
+                    model_name=metadata.get("model"), 
+                    prompt=prompt,
+                    response=new_content,
+                    token_usage=token_usage,
+                    latency_ms=latency_ms
+                )
             
             # Écrire le nouveau contenu
             write_result = await self._write_file(file_path, new_content)
@@ -422,6 +489,13 @@ Réponds UNIQUEMENT avec le nouveau contenu complet du fichier, sans explication
             # ✅ AMÉLIORATION: Diagnostics préliminaires
             await self._run_git_diagnostics()
             
+            # ✅ CORRECTION: Nettoyer l'URL du repository avant validation
+            if repo_url and repo_url.strip():
+                cleaned_url = self._clean_repository_url(repo_url)
+                if cleaned_url != repo_url:
+                    self.logger.info(f"🧹 URL repository nettoyée: '{repo_url[:50]}...' → '{cleaned_url}'")
+                    repo_url = cleaned_url
+            
             # ✅ CORRECTION: Cloner le repository avec tolérance d'échec
             self.logger.info(f"📥 Clonage du repository: {repo_url}")
             clone_success = False
@@ -431,7 +505,7 @@ Réponds UNIQUEMENT avec le nouveau contenu complet du fichier, sans explication
             if not repo_url or not repo_url.strip():
                 self.logger.warning("⚠️ Aucune URL de repository fournie - création d'un workspace vide")
             elif not self._is_valid_git_url(repo_url):
-                self.logger.warning(f"⚠️ URL repository invalide: {repo_url} - création d'un workspace vide")
+                self.logger.warning(f"⚠️ URL repository invalide après nettoyage: {repo_url} - création d'un workspace vide")
             else:
                 # Nettoyer le répertoire de travail avant clonage
                 await self._prepare_clean_workspace()
@@ -748,6 +822,52 @@ node_modules/
         except Exception as e:
             self.logger.warning(f"⚠️ Erreur lors des diagnostics Git: {e}")
 
+    def _clean_repository_url(self, url: str) -> str:
+        """
+        Nettoie et extrait l'URL du repository depuis différents formats.
+        
+        Gère les cas comme :
+        - "GitHub - user/repo - https://github.com/user/repo"
+        - "https://github.com/user/repo"
+        - "git@github.com:user/repo"
+        """
+        if not url or not isinstance(url, str):
+            return ""
+        
+        import re
+        url = url.strip()
+        
+        # ✅ CORRECTION: Extraire l'URL depuis un texte formaté Monday.com
+        # Format: "GitHub - user/repo - https://github.com/user/repo"
+        # ou: "Repository: https://github.com/user/repo"
+        
+        # Chercher une URL HTTPS complète
+        https_match = re.search(r'(https://github\.com/[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+(?:\.git)?)', url, re.IGNORECASE)
+        if https_match:
+            clean_url = https_match.group(1)
+            # Retirer .git si présent
+            if clean_url.endswith('.git'):
+                clean_url = clean_url[:-4]
+            self.logger.debug(f"🧹 URL nettoyée: '{url}' → '{clean_url}'")
+            return clean_url
+        
+        # Chercher une URL SSH
+        ssh_match = re.search(r'(git@github\.com:[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+(?:\.git)?)', url, re.IGNORECASE)
+        if ssh_match:
+            ssh_url = ssh_match.group(1)
+            # Convertir SSH en HTTPS
+            ssh_to_https = re.sub(r'git@github\.com:([^/]+)/([^.]+)(?:\.git)?', r'https://github.com/\1/\2', ssh_url)
+            self.logger.debug(f"🧹 URL SSH → HTTPS: '{url}' → '{ssh_to_https}'")
+            return ssh_to_https
+        
+        # Si l'URL est déjà propre, la retourner
+        if re.match(r'^https://github\.com/[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+/?$', url, re.IGNORECASE):
+            return url
+        
+        # Aucune URL valide trouvée
+        self.logger.warning(f"⚠️ Impossible d'extraire une URL valide depuis: '{url}'")
+        return url  # Retourner l'URL originale pour diagnostic
+    
     def _is_valid_git_url(self, url: str) -> bool:
         """Valide si une URL est un repository Git valide."""
         if not url or not isinstance(url, str):

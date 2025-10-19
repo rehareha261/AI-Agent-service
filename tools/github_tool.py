@@ -46,9 +46,9 @@ class GitHubTool(BaseTool):
                 )
             elif action == "push_branch":
                 git_result = await self._push_branch(
-                    repo_url=kwargs.get("repo_url"),
+                    working_directory=kwargs.get("working_directory"),
                     branch=kwargs.get("branch"),
-                    working_directory=kwargs.get("working_directory")
+                    repository_url=kwargs.get("repo_url")  # Paramètre optionnel
                 )
                 # Convertir GitOperationResult en dictionnaire
                 return {
@@ -63,6 +63,18 @@ class GitHubTool(BaseTool):
                     repo_url=kwargs.get("repo_url"),
                     pr_number=kwargs.get("pr_number"),
                     comment=kwargs.get("comment")
+                )
+            elif action == "merge_pull_request":
+                return await self._merge_pull_request(
+                    repo_url=kwargs.get("repo_url"),
+                    pr_number=kwargs.get("pr_number"),
+                    commit_message=kwargs.get("commit_message"),
+                    merge_method=kwargs.get("merge_method", "merge")
+                )
+            elif action == "delete_branch":
+                return await self._delete_branch(
+                    repo_url=kwargs.get("repo_url"),
+                    branch=kwargs.get("branch")
                 )
             else:
                 raise ValueError(f"Action non supportée: {action}")
@@ -252,8 +264,15 @@ class GitHubTool(BaseTool):
         except Exception as e:
             return self.handle_error(e, "création de la Pull Request")
 
-    async def _push_branch(self, working_directory: str, branch: str) -> GitOperationResult:
-        """Pousse une branche vers GitHub."""
+    async def _push_branch(self, working_directory: str, branch: str, repository_url: str = None) -> GitOperationResult:
+        """
+        Pousse une branche vers GitHub.
+        
+        Args:
+            working_directory: Répertoire de travail Git
+            branch: Nom de la branche à pousser
+            repository_url: URL du repository GitHub (optionnel, utilisé si remote origin n'existe pas)
+        """
         try:
             # Validation des paramètres
             if not working_directory or not os.path.exists(working_directory):
@@ -294,16 +313,10 @@ class GitHubTool(BaseTool):
             os.chdir(working_directory)
 
             try:
-                # Configurer Git avec le token pour l'authentification
+                # Récupérer le token GitHub pour l'authentification
                 github_token = self.settings.github_token
-                if github_token:
-                    # Configurer le helper de credentials pour utiliser le token
-                    subprocess.run(
-                        ["git", "config", "credential.helper", "store"],
-                        capture_output=True,
-                        text=True,
-                        check=True
-                    )
+                
+                # ✅ SÉCURITÉ: Pas besoin de credential.helper car on utilise l'URL avec token
                 
                 # Vérifier le statut git avant de commencer
                 status_result = subprocess.run(
@@ -313,8 +326,16 @@ class GitHubTool(BaseTool):
                     check=True
                 )
                 
-                if not status_result.stdout.strip():
+                has_changes = bool(status_result.stdout.strip())
+                if not has_changes:
                     self.logger.warning("⚠️ Aucun changement détecté dans le repository")
+                    # ✅ AMÉLIORATION: Retourner une erreur explicite au lieu de continuer
+                    return GitOperationResult(
+                        success=False,
+                        message="Aucun fichier modifié à pousser - vérifiez que l'implémentation a créé des fichiers",
+                        branch=branch,
+                        error="Échec implémentation: Aucun changement détecté par git status. L'IA n'a probablement pas créé/modifié de fichiers."
+                    )
                 
                 # Ajouter tous les fichiers modifiés
                 add_result = subprocess.run(
@@ -332,8 +353,17 @@ class GitHubTool(BaseTool):
                     check=True
                 )
                 
-                if not status_after_add.stdout.strip():
-                    self.logger.warning("⚠️ Aucun fichier à committer après git add")
+                files_to_commit = status_after_add.stdout.strip()
+                if not files_to_commit:
+                    self.logger.error("❌ Aucun fichier à committer après git add")
+                    return GitOperationResult(
+                        success=False,
+                        message="Aucun fichier à committer",
+                        branch=branch,
+                        error="Aucun fichier modifié après 'git add .' - l'implémentation a échoué"
+                    )
+                
+                self.logger.info(f"📝 Fichiers à committer:\n{files_to_commit}")
 
                 # Committer les changements
                 commit_result = subprocess.run(
@@ -346,9 +376,51 @@ class GitHubTool(BaseTool):
                 # Pousser la branche avec authentification
                 push_command = ["git", "push", "origin", branch]
                 
-                # Si on a un token, modifier l'URL pour inclure l'authentification
+                # ✅ CORRECTION: Vérifier si le remote origin existe avant de l'utiliser
+                remote_check = subprocess.run(
+                    ["git", "remote", "get-url", "origin"],
+                    capture_output=True,
+                    text=True
+                )
+                
+                if remote_check.returncode != 0:
+                    # Le remote origin n'existe pas, il faut le créer
+                    self.logger.warning("⚠️ Aucun remote 'origin' configuré - création impossible sans URL repository")
+                    
+                    # Vérifier si on a l'URL du repository dans le state ou les paramètres
+                    if hasattr(self, 'repository_url') and self.repository_url:
+                        repo_url = self.repository_url
+                    elif repository_url:
+                        repo_url = repository_url
+                    else:
+                        return GitOperationResult(
+                            success=False,
+                            message="Impossible de pousser : pas de remote 'origin' et pas d'URL repository disponible",
+                            branch=branch,
+                            error="No such remote 'origin'"
+                        )
+                    
+                    # Ajouter le remote origin
+                    self.logger.info(f"📍 Ajout du remote origin: {repo_url}")
+                    add_remote_result = subprocess.run(
+                        ["git", "remote", "add", "origin", repo_url],
+                        capture_output=True,
+                        text=True
+                    )
+                    
+                    if add_remote_result.returncode != 0:
+                        return GitOperationResult(
+                            success=False,
+                            message=f"Erreur lors de l'ajout du remote origin: {add_remote_result.stderr}",
+                            branch=branch,
+                            error=add_remote_result.stderr
+                        )
+                    
+                    self.logger.info("✅ Remote origin ajouté avec succès")
+                
+                # ✅ CORRECTION: Format correct pour l'authentification GitHub avec token
                 if github_token:
-                    # Récupérer l'URL remote actuelle
+                    # Récupérer l'URL remote actuelle (maintenant qu'elle existe)
                     remote_result = subprocess.run(
                         ["git", "remote", "get-url", "origin"],
                         capture_output=True,
@@ -358,21 +430,72 @@ class GitHubTool(BaseTool):
                     
                     remote_url = remote_result.stdout.strip()
                     if remote_url.startswith("https://github.com/"):
-                        # Ajouter le token à l'URL
-                        auth_url = remote_url.replace("https://github.com/", f"https://{github_token}@github.com/")
+                        # ✅ Format correct: https://x-access-token:TOKEN@github.com/...
+                        # C'est le format officiel recommandé par GitHub pour les PAT
+                        auth_url = remote_url.replace("https://github.com/", f"https://x-access-token:{github_token}@github.com/")
                         subprocess.run(
                             ["git", "remote", "set-url", "origin", auth_url],
                             capture_output=True,
                             text=True,
                             check=True
                         )
+                        self.logger.info("✅ URL remote configurée avec authentification")
+                    elif remote_url.startswith("git@github.com:"):
+                        # Convertir SSH en HTTPS avec token
+                        https_url = remote_url.replace("git@github.com:", "https://x-access-token:"+github_token+"@github.com/")
+                        subprocess.run(
+                            ["git", "remote", "set-url", "origin", https_url],
+                            capture_output=True,
+                            text=True,
+                            check=True
+                        )
+                        self.logger.info("✅ URL remote convertie de SSH vers HTTPS avec authentification")
                 
                 push_result = subprocess.run(
                     push_command,
                     capture_output=True,
-                    text=True,
-                    check=True
+                    text=True
                 )
+                
+                # ✅ GESTION D'ERREUR: Vérifier le résultat du push
+                if push_result.returncode != 0:
+                    error_output = push_result.stderr or push_result.stdout
+                    
+                    # Analyser l'erreur pour fournir des conseils
+                    if "403" in error_output or "Permission" in error_output or "denied" in error_output:
+                        detailed_error = f"""❌ Erreur de permissions GitHub (403):
+
+{error_output}
+
+🔧 Solutions possibles:
+1. Vérifiez que votre GITHUB_TOKEN est valide et n'a pas expiré
+2. Assurez-vous que le token a les permissions suivantes:
+   - repo (accès complet aux repositories privés)
+   - workflow (si vous modifiez des workflows)
+3. Pour générer un nouveau token: https://github.com/settings/tokens
+   - Sélectionnez "Personal access tokens" > "Tokens (classic)"
+   - Cochez au minimum: repo, workflow
+4. Mettez à jour GITHUB_TOKEN dans votre fichier .env
+
+📋 Repository concerné: {remote_url}
+"""
+                        self.logger.error(detailed_error)
+                        
+                        return GitOperationResult(
+                            success=False,
+                            message="Erreur de permissions GitHub",
+                            branch=branch,
+                            error=detailed_error
+                        )
+                    
+                    # Autres erreurs Git
+                    self.logger.error(f"❌ Erreur Git: {error_output}")
+                    return GitOperationResult(
+                        success=False,
+                        message=f"Erreur lors du push",
+                        branch=branch,
+                        error=f"Erreur Git: {error_output}"
+                    )
 
                 # Récupérer le hash du commit
                 commit_hash_result = subprocess.run(
@@ -435,6 +558,193 @@ class GitHubTool(BaseTool):
 
         except Exception as e:
             return self.handle_error(e, f"ajout de commentaire à la PR #{pr_number}")
+
+    async def _merge_pull_request(self, repo_url: str, pr_number: int, 
+                                   commit_message: Optional[str] = None,
+                                   merge_method: str = "merge") -> Dict[str, Any]:
+        """
+        Merge une Pull Request sur GitHub.
+        
+        Args:
+            repo_url: URL du repository GitHub
+            pr_number: Numéro de la PR à merger
+            commit_message: Message de commit pour le merge (optionnel)
+            merge_method: Méthode de merge ("merge", "squash", ou "rebase")
+        
+        Returns:
+            Dictionnaire avec le résultat du merge
+        """
+        try:
+            # Extraire le nom du repository
+            repo_name = self._extract_repo_name(repo_url)
+            self.logger.info(f"🔀 Tentative de merge PR #{pr_number} sur {repo_name}")
+            
+            # Accéder au repository
+            repo = self.github_client.get_repo(repo_name)
+            
+            # Récupérer la PR
+            pr = repo.get_pull(pr_number)
+            
+            # Vérifier que la PR est mergeable
+            if pr.mergeable is False:
+                return {
+                    "success": False,
+                    "error": f"La PR #{pr_number} a des conflits et ne peut pas être mergée automatiquement",
+                    "mergeable_state": pr.mergeable_state
+                }
+            
+            if pr.merged:
+                return {
+                    "success": False,
+                    "error": f"La PR #{pr_number} est déjà mergée",
+                    "merged_at": pr.merged_at.isoformat() if pr.merged_at else None
+                }
+            
+            if pr.state == "closed":
+                return {
+                    "success": False,
+                    "error": f"La PR #{pr_number} est fermée sans être mergée"
+                }
+            
+            # Préparer le message de commit
+            if not commit_message:
+                commit_message = f"Merge pull request #{pr_number}: {pr.title}"
+            
+            # Valider la méthode de merge
+            valid_methods = ["merge", "squash", "rebase"]
+            if merge_method not in valid_methods:
+                self.logger.warning(f"⚠️ Méthode de merge invalide '{merge_method}', utilisation de 'merge'")
+                merge_method = "merge"
+            
+            # Effectuer le merge
+            self.logger.info(f"🔀 Merge PR #{pr_number} avec méthode: {merge_method}")
+            merge_result = pr.merge(
+                commit_message=commit_message,
+                merge_method=merge_method
+            )
+            
+            if merge_result.merged:
+                self.logger.info(f"✅ PR #{pr_number} mergée avec succès - SHA: {merge_result.sha}")
+                self.log_operation(f"PR #{pr_number} mergée", True)
+                
+                return {
+                    "success": True,
+                    "merged": True,
+                    "sha": merge_result.sha,
+                    "message": merge_result.message,
+                    "pr_number": pr_number,
+                    "pr_title": pr.title
+                }
+            else:
+                error_msg = merge_result.message or "Merge échoué sans raison spécifique"
+                self.logger.error(f"❌ Échec du merge PR #{pr_number}: {error_msg}")
+                return {
+                    "success": False,
+                    "merged": False,
+                    "error": error_msg
+                }
+        
+        except GithubException as e:
+            error_details = {
+                "status_code": e.status,
+                "message": str(e),
+                "pr_number": pr_number
+            }
+            
+            if e.status == 404:
+                error_msg = f"PR #{pr_number} non trouvée ou repository inaccessible"
+            elif e.status == 405:
+                error_msg = f"PR #{pr_number} ne peut pas être mergée (conflits ou restrictions de branche)"
+            elif e.status == 409:
+                error_msg = f"PR #{pr_number} a des conflits de merge"
+            else:
+                error_msg = f"Erreur GitHub lors du merge: {str(e)}"
+            
+            self.logger.error(f"❌ {error_msg}")
+            return {
+                "success": False,
+                "error": error_msg,
+                "details": error_details
+            }
+        
+        except Exception as e:
+            return self.handle_error(e, f"merge de la PR #{pr_number}")
+
+    async def _delete_branch(self, repo_url: str, branch: str) -> Dict[str, Any]:
+        """
+        Supprime une branche sur GitHub.
+        
+        Args:
+            repo_url: URL du repository GitHub
+            branch: Nom de la branche à supprimer
+        
+        Returns:
+            Dictionnaire avec le résultat de la suppression
+        """
+        try:
+            # Extraire le nom du repository
+            repo_name = self._extract_repo_name(repo_url)
+            self.logger.info(f"🧹 Tentative de suppression de la branche '{branch}' sur {repo_name}")
+            
+            # Accéder au repository
+            repo = self.github_client.get_repo(repo_name)
+            
+            # Récupérer la référence de la branche
+            ref_name = f"heads/{branch}"
+            
+            try:
+                ref = repo.get_git_ref(ref_name)
+                
+                # Supprimer la branche
+                ref.delete()
+                
+                self.logger.info(f"✅ Branche '{branch}' supprimée avec succès")
+                self.log_operation(f"Branche '{branch}' supprimée", True)
+                
+                return {
+                    "success": True,
+                    "message": f"Branche '{branch}' supprimée avec succès",
+                    "branch": branch
+                }
+                
+            except GithubException as ref_error:
+                if ref_error.status == 404:
+                    # La branche n'existe pas (peut-être déjà supprimée)
+                    self.logger.warning(f"⚠️ Branche '{branch}' non trouvée (peut-être déjà supprimée)")
+                    return {
+                        "success": True,  # Considéré comme succès car objectif atteint
+                        "message": f"Branche '{branch}' non trouvée (déjà supprimée?)",
+                        "branch": branch,
+                        "already_deleted": True
+                    }
+                else:
+                    raise ref_error
+        
+        except GithubException as e:
+            error_details = {
+                "status_code": e.status,
+                "message": str(e),
+                "branch": branch
+            }
+            
+            if e.status == 404:
+                error_msg = f"Repository ou branche '{branch}' non trouvé(e)"
+            elif e.status == 403:
+                error_msg = f"Permissions insuffisantes pour supprimer la branche '{branch}'"
+            elif e.status == 422:
+                error_msg = f"Impossible de supprimer la branche '{branch}' (peut-être la branche par défaut?)"
+            else:
+                error_msg = f"Erreur GitHub lors de la suppression de la branche: {str(e)}"
+            
+            self.logger.error(f"❌ {error_msg}")
+            return {
+                "success": False,
+                "error": error_msg,
+                "details": error_details
+            }
+        
+        except Exception as e:
+            return self.handle_error(e, f"suppression de la branche '{branch}'")
 
     def _extract_repo_name(self, repo_url: str) -> str:
         """Extrait le nom du repository depuis une URL GitHub."""

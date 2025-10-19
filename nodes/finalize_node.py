@@ -7,6 +7,7 @@ from tools.github_tool import GitHubTool
 from utils.logger import get_logger
 from utils.helpers import get_working_directory, validate_working_directory, ensure_working_directory
 from utils.persistence_decorator import with_persistence
+from services.database_persistence_service import db_persistence
 
 logger = get_logger(__name__)
 
@@ -81,6 +82,21 @@ async def finalize_pr(state: GraphState) -> GraphState:
             getattr(task, 'branch_name', None) or 
             ""
         )
+        
+        # ✅ CORRECTION: Nettoyer l'URL du repository si elle provient de Monday.com
+        if repo_url and isinstance(repo_url, str):
+            import re
+            # Format Monday.com: "GitHub - user/repo - https://github.com/user/repo"
+            https_match = re.search(r'(https://github\.com/[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+(?:\.git)?)', repo_url)
+            if https_match:
+                cleaned_url = https_match.group(1)
+                if cleaned_url.endswith('.git'):
+                    cleaned_url = cleaned_url[:-4]
+                if cleaned_url != repo_url:
+                    logger.info(f"🧹 URL repository nettoyée pour finalize: '{repo_url[:50]}...' → '{cleaned_url}'")
+                    repo_url = cleaned_url
+                    # Mettre à jour dans l'état pour cohérence
+                    state["results"]["repository_url"] = cleaned_url
         
         logger.info(f"🔍 Repository URL: {repo_url}")
         logger.info(f"🔍 Git branch: {git_branch}")
@@ -197,10 +213,11 @@ async def finalize_pr(state: GraphState) -> GraphState:
                 if 'original_cwd' in locals():
                     os.chdir(original_cwd)
 
-            # Appel corrigé sans repo_url
+            # ✅ CORRECTION: Passer repository_url pour gérer le cas où remote origin n'existe pas
             push_result = await github_tool._push_branch(
                 working_directory=working_directory,
-                branch=git_branch
+                branch=git_branch,
+                repository_url=repo_url  # Ajout pour gérer le remote manquant
             )
             logger.info(f"�� Résultat push reçu: {type(push_result)} - {push_result}")
 
@@ -218,9 +235,41 @@ async def finalize_pr(state: GraphState) -> GraphState:
                 error_msg = "Résultat push invalide"
 
             if not push_success:
-                raise Exception(f"Échec push: {error_msg}")
+                # ✅ AMÉLIORATION: Gérer le cas où les fichiers sont déjà poussés
+                if error_msg and "Aucun changement détecté" in error_msg:
+                    logger.warning("⚠️ Aucun changement local - vérification si la branche existe déjà sur le remote...")
+                    # Vérifier si la branche existe déjà sur GitHub
+                    try:
+                        import subprocess
+                        original_cwd_check = os.getcwd()
+                        os.chdir(working_directory)
+                        
+                        check_result = subprocess.run(
+                            ["git", "ls-remote", "--heads", "origin", git_branch],
+                            capture_output=True,
+                            text=True,
+                            timeout=10
+                        )
+                        
+                        os.chdir(original_cwd_check)
+                        
+                        if check_result.returncode == 0 and check_result.stdout.strip():
+                            logger.info(f"✅ La branche {git_branch} existe déjà sur le remote")
+                            logger.info("💡 Les fichiers ont été poussés pendant l'implémentation - continuons avec la PR")
+                            push_success = True  # Considérer comme un succès pour continuer
+                        else:
+                            logger.error(f"❌ La branche n'existe pas sur le remote et pas de changements locaux")
+                            raise Exception(f"Échec push: {error_msg}")
+                    except Exception as check_error:
+                        logger.error(f"❌ Impossible de vérifier l'existence de la branche: {check_error}")
+                        if 'original_cwd_check' in locals():
+                            os.chdir(original_cwd_check)
+                        raise Exception(f"Échec push: {error_msg}")
+                else:
+                    raise Exception(f"Échec push: {error_msg}")
 
-            logger.info(f"✅ Branche {git_branch} poussée avec succès")
+            if push_success:
+                logger.info(f"✅ Branche {git_branch} poussée avec succès (ou déjà présente sur le remote)")
 
             # 2. Ensuite créer la Pull Request
             pr_result = await github_tool._arun(
@@ -267,6 +316,31 @@ async def finalize_pr(state: GraphState) -> GraphState:
 
                 logger.info(f"✅ PR créée avec succès - #{pr_info.number}: {pr_info.url}")
                 
+                # ✅ PERSISTENCE: Sauvegarder la PR en base de données
+                try:
+                    # ✅ CORRECTION: Utiliser db_task_id (ID base de données) au lieu de task_id (monday_item_id)
+                    task_id = state.get("db_task_id")
+                    task_run_id = state.get("db_run_id")
+                    
+                    if task_id and task_run_id:
+                        await db_persistence.create_pull_request(
+                            task_id=int(task_id),  # S'assurer que c'est un entier
+                            task_run_id=int(task_run_id),  # S'assurer que c'est un entier
+                            github_pr_number=pr_info.number,
+                            github_pr_url=pr_info.url,
+                            pr_title=pr_title,
+                            pr_description=pr_body,
+                            head_sha=None,  # Sera rempli plus tard si nécessaire
+                            base_branch="main",
+                            feature_branch=git_branch
+                        )
+                        logger.info(f"💾 Pull request sauvegardée en base de données")
+                    else:
+                        logger.warning(f"⚠️ Impossible de sauvegarder la PR en base: task_id={task_id}, task_run_id={task_run_id}")
+                except Exception as db_error:
+                    logger.error(f"❌ Erreur sauvegarde PR en base: {db_error}")
+                    # Ne pas faire échouer le workflow pour un problème de persistence
+                
             elif pr_result and not pr_result.get("success"):
                 # Erreur avec message spécifique
                 error_msg = pr_result.get("error", "Erreur lors de la création de PR")
@@ -283,6 +357,75 @@ async def finalize_pr(state: GraphState) -> GraphState:
 
         state["results"]["should_continue"] = True
         state["results"]["waiting_human_validation"] = True
+        
+        # ✅ PERSISTENCE: Enregistrer les métriques de performance
+        try:
+            task_id = state.get("db_task_id")
+            task_run_id = state.get("db_run_id")
+            
+            if task_id and task_run_id:
+                # Calculer les métriques depuis l'état
+                started_at = state.get("started_at")
+                total_duration = None
+                if started_at:
+                    from datetime import datetime, timezone
+                    # ✅ CORRECTION: S'assurer que les deux datetimes ont le même timezone
+                    now_utc = datetime.now(timezone.utc)
+                    # Si started_at est offset-naive, le rendre offset-aware
+                    if started_at.tzinfo is None:
+                        started_at = started_at.replace(tzinfo=timezone.utc)
+                    total_duration = int((now_utc - started_at).total_seconds())
+                
+                # Collecter les métriques d'IA depuis les résultats
+                ai_calls = state.get("results", {}).get("total_ai_calls", 0)
+                total_tokens = state.get("results", {}).get("total_tokens_used", 0)
+                total_cost = state.get("results", {}).get("total_ai_cost", 0.0)
+                
+                # Métriques de tests
+                test_results_list = state.get("results", {}).get("test_results", [])
+                test_coverage = None
+                if test_results_list:
+                    last_test = test_results_list[-1]
+                    if isinstance(last_test, dict):
+                        test_coverage = last_test.get("coverage", None)
+                
+                # Nombre de tentatives de retry/debug
+                retry_attempts = state.get("results", {}).get("debug_attempts", 0)
+                
+                # Lignes de code générées (estimation basée sur modified_files)
+                code_lines = 0
+                code_changes = state.get("results", {}).get("code_changes", {})
+                for file_code in code_changes.values():
+                    if isinstance(file_code, str):
+                        code_lines += len(file_code.split('\n'))
+                
+                await db_persistence.record_performance_metrics(
+                    task_id=task_id,
+                    task_run_id=task_run_id,
+                    total_duration_seconds=total_duration,
+                    ai_processing_time_seconds=None,  # Peut être calculé plus tard
+                    testing_time_seconds=None,  # Peut être calculé plus tard
+                    total_ai_calls=ai_calls,
+                    total_tokens_used=total_tokens,
+                    total_ai_cost=total_cost,
+                    test_coverage_final=test_coverage,
+                    retry_attempts=retry_attempts
+                )
+                logger.info(f"💾 Métriques de performance enregistrées pour task_id={task_id}, run_id={task_run_id}")
+            else:
+                logger.warning(f"⚠️ Impossible d'enregistrer les métriques: task_id={task_id}, task_run_id={task_run_id}")
+        except Exception as metrics_error:
+            logger.error(f"❌ Erreur enregistrement métriques de performance: {metrics_error}")
+            # Ne pas faire échouer le workflow pour un problème de persistence
+
+        # ✅ CORRECTION SIGSEGV: Nettoyer le client LangSmith pour éviter les problèmes de désallocation
+        try:
+            from config.langsmith_config import langsmith_config
+            if langsmith_config._client is not None:
+                logger.info("🧹 Nettoyage du client LangSmith pour éviter SIGSEGV")
+                langsmith_config._client = None
+        except Exception as cleanup_error:
+            logger.warning(f"⚠️ Erreur nettoyage LangSmith: {cleanup_error}")
 
         return state
 
@@ -306,10 +449,12 @@ async def _generate_pr_content(task, state: Dict[str, Any]) -> tuple[str, str]:
     pr_title = f"feat: {task.title}"
 
     # Corps de la PR
+    # ✅ COHÉRENCE: Afficher monday_item_id pour l'utilisateur (pas db_task_id)
+    display_id = task.monday_item_id if hasattr(task, 'monday_item_id') and task.monday_item_id else task.task_id
     pr_body = f"""## 🤖 Pull Request générée automatiquement
 
 ### 📋 Tâche
-**ID**: {task.task_id}
+**ID Monday.com**: {display_id}
 **Titre**: {task.title}
 **Priorité**: {task.priority}
 

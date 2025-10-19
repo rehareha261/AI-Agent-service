@@ -1,16 +1,61 @@
 """Nœud de debug - analyse et corrige les erreurs de tests."""
 
-from typing import Dict, Any
+from typing import Dict, Any, Tuple
 from models.state import GraphState
 
 from tools.claude_code_tool import ClaudeCodeTool
 from utils.logger import get_logger
 from utils.helpers import get_working_directory, validate_working_directory, ensure_working_directory
 from anthropic import Client
+from openai import AsyncOpenAI
 from config.settings import get_settings
 from utils.persistence_decorator import with_persistence, log_code_generation_decorator
 
 logger = get_logger(__name__)
+
+# Flag pour activer/désactiver la classification LangChain (Phase 3)
+USE_LANGCHAIN_ERROR_CLASSIFICATION = True
+
+
+async def _call_llm_with_fallback(anthropic_client: Client, openai_client: AsyncOpenAI, prompt: str, max_tokens: int = 4000) -> Tuple[str, str]:
+    """
+    Appelle le LLM avec fallback automatique Anthropic → OpenAI.
+    
+    Returns:
+        Tuple[content, provider_used]
+    """
+    # Tentative 1: Anthropic
+    try:
+        logger.info("🚀 Tentative avec Anthropic...")
+        response = anthropic_client.messages.create(
+            model="claude-3-5-sonnet-20241022",
+            max_tokens=max_tokens,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        content = response.content[0].text
+        logger.info("✅ Anthropic réussi")
+        return content, "anthropic"
+    except Exception as e:
+        logger.warning(f"⚠️ Anthropic échoué: {e}")
+        
+        # Tentative 2: OpenAI fallback
+        if openai_client:
+            try:
+                logger.info("🔄 Fallback vers OpenAI...")
+                response = await openai_client.chat.completions.create(
+                    model="gpt-4o",
+                    max_tokens=max_tokens,
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                content = response.choices[0].message.content
+                logger.info("✅ OpenAI fallback réussi")
+                return content, "openai"
+            except Exception as e2:
+                logger.error(f"❌ OpenAI fallback échoué: {e2}")
+                raise Exception(f"Anthropic et OpenAI ont échoué. Anthropic: {e}, OpenAI: {e2}")
+        else:
+            logger.error("❌ Pas de fallback OpenAI disponible")
+            raise Exception(f"Anthropic échoué et pas de fallback OpenAI: {e}")
 
 @with_persistence("debug_code")
 @log_code_generation_decorator("claude", "claude-3-5-sonnet-20241022", "debug")
@@ -86,6 +131,8 @@ async def debug_code(state: GraphState) -> GraphState:
         
         settings = get_settings()
         anthropic_client = Client(api_key=settings.anthropic_api_key)
+        # Initialiser OpenAI client pour fallback
+        openai_client = AsyncOpenAI(api_key=settings.openai_api_key) if settings.openai_api_key else None
         
         # 1. Analyser l'erreur en détail
         logger.info("🔍 Analyse détaillée de l'erreur...")
@@ -93,6 +140,75 @@ async def debug_code(state: GraphState) -> GraphState:
         error_analysis = await _analyze_error_in_detail(
             latest_test_result, state, claude_tool
         )
+        
+        # 1.5. PHASE 3: Classification et regroupement des erreurs (optionnel)
+        error_classification = None
+        if USE_LANGCHAIN_ERROR_CLASSIFICATION:
+            try:
+                logger.info("🔗 Classification des erreurs avec LangChain...")
+                
+                from ai.chains.debug_error_classification_chain import (
+                    classify_debug_errors,
+                    extract_classification_metrics,
+                    get_priority_ordered_groups
+                )
+                
+                # Récupérer les logs et traces
+                test_output = latest_test_result.get("output", "")
+                stack_trace = latest_test_result.get("stack_trace", "")
+                
+                # Classifier les erreurs
+                error_classification = await classify_debug_errors(
+                    test_logs=test_output,
+                    stack_traces=stack_trace,
+                    recent_diff=None,  # TODO: Récupérer le diff si disponible
+                    modified_files=list(state["results"].get("code_changes", {}).keys()),
+                    additional_context={
+                        "task_id": state["task"].task_id,
+                        "debug_attempt": current_attempt
+                    },
+                    provider="anthropic",
+                    fallback_to_openai=True
+                )
+                
+                # Extraire les métriques
+                metrics = extract_classification_metrics(error_classification)
+                
+                logger.info(
+                    f"✅ Classification terminée: "
+                    f"{metrics['total_errors']} erreurs → {metrics['total_groups']} groupes "
+                    f"(réduction: {metrics['reduction_percentage']:.1f}%)"
+                )
+                
+                # Stocker la classification dans l'état
+                state["results"]["error_classification"] = error_classification.model_dump()
+                state["results"]["error_metrics"] = metrics
+                
+                # Logger le résumé de chaque groupe
+                ordered_groups = get_priority_ordered_groups(error_classification)
+                for i, group in enumerate(ordered_groups, 1):
+                    logger.info(
+                        f"  Groupe {i}: {group.category.value} "
+                        f"(priorité: {group.priority}, "
+                        f"fichiers: {len(group.files_involved)})"
+                    )
+                
+                # Enrichir l'analyse d'erreur avec la classification
+                error_analysis += f"\n\n## CLASSIFICATION DES ERREURS\n"
+                error_analysis += f"Nombre de groupes d'erreurs: {metrics['total_groups']}\n"
+                error_analysis += f"Réduction d'actions: {metrics['reduction_percentage']:.1f}%\n\n"
+                
+                for i, group in enumerate(ordered_groups, 1):
+                    error_analysis += f"\n### Groupe {i}: {group.group_summary}\n"
+                    error_analysis += f"- Catégorie: {group.category.value}\n"
+                    error_analysis += f"- Priorité: {group.priority}\n"
+                    error_analysis += f"- Cause: {group.probable_root_cause}\n"
+                    error_analysis += f"- Stratégie: {group.fix_description}\n"
+                    error_analysis += f"- Fichiers: {', '.join(group.files_involved)}\n"
+                
+            except Exception as e:
+                logger.warning(f"⚠️ Échec classification LangChain: {e}")
+                # Continuer sans classification
         
         # 2. Créer un prompt de debug pour Claude
         debug_prompt = await _create_debug_prompt(
@@ -102,19 +218,17 @@ async def debug_code(state: GraphState) -> GraphState:
         logger.info("🤖 Génération de correctifs avec Claude...")
     # Initialiser ai_messages si nécessaire
         
-        # 3. Demander à Claude de proposer des corrections
-        response = anthropic_client.messages.create(
-            model="claude-3-5-sonnet-20241022",
-            max_tokens=4000,
-            messages=[{"role": "user", "content": debug_prompt}]
+        # 3. Demander au LLM de proposer des corrections (avec fallback)
+        debug_solution, provider_used = await _call_llm_with_fallback(
+            anthropic_client, openai_client, debug_prompt, max_tokens=4000
         )
         
-        debug_solution = response.content[0].text
+        logger.info(f"✅ Solution de debug générée avec {provider_used}")
         state["results"]["ai_messages"].append(f"🔧 Solution proposée:\n{debug_solution[:200]}...")
         
         # 4. Appliquer les corrections
         success = await _apply_debug_corrections(
-            claude_tool, anthropic_client, debug_solution, state
+            claude_tool, anthropic_client, openai_client, debug_solution, state
         )
         
         if success:
@@ -239,6 +353,7 @@ explanation: [Pourquoi cette commande résout le problème]
 async def _apply_debug_corrections(
     claude_tool: ClaudeCodeTool,
     anthropic_client: Client,
+    openai_client: AsyncOpenAI,
     debug_solution: str,
     state: Dict[str, Any]
 ) -> bool:

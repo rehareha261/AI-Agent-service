@@ -76,56 +76,56 @@ celery_app.conf.update(
     # Déclaration des queues spécialisées
     task_queues=[
         # Queue prioritaire pour webhooks Monday.com
-        Queue('webhooks', 
-              exchange=default_exchange, 
-              routing_key='webhook.*',
-              queue_arguments={
-                  'x-max-priority': 10,
-                  'x-message-ttl': 900000,  # 15 minutes TTL
-                  'x-dead-letter-exchange': 'ai_agent',
-                  'x-dead-letter-routing-key': 'dead_letter.webhook'
-              }),
+        Queue('webhooks',
+            exchange=default_exchange,
+            routing_key='webhook.*',
+            queue_arguments={
+                'x-max-priority': 10,
+                'x-message-ttl': 900000,  # 15 minutes TTL
+                'x-dead-letter-exchange': 'ai_agent',
+                'x-dead-letter-routing-key': 'dead_letter.webhook'
+            }),
         
         # Queue pour workflows LangGraph
-        Queue('workflows', 
-              exchange=default_exchange, 
-              routing_key='workflow.*',
-              queue_arguments={
-                  'x-max-priority': 5,
-                  'x-message-ttl': 3600000,  # 1 heure TTL
-                  'x-dead-letter-exchange': 'ai_agent',
-                  'x-dead-letter-routing-key': 'dead_letter.workflow'
-              }),
+        Queue('workflows',
+            exchange=default_exchange,
+            routing_key='workflow.*',
+            queue_arguments={
+                'x-max-priority': 5,
+                'x-message-ttl': 3600000,  # 1 heure TTL
+                'x-dead-letter-exchange': 'ai_agent',
+                'x-dead-letter-routing-key': 'dead_letter.workflow'
+            }),
         
         # Queue pour génération IA
-        Queue('ai_generation', 
-              exchange=default_exchange, 
-              routing_key='ai.*',
-              queue_arguments={
-                  'x-max-priority': 7,
-                  'x-message-ttl': 1800000,  # 30 minutes TTL
-                  'x-dead-letter-exchange': 'ai_agent',
-                  'x-dead-letter-routing-key': 'dead_letter.ai'
-              }),
+        Queue('ai_generation',
+            exchange=default_exchange,
+            routing_key='ai.*',
+            queue_arguments={
+                'x-max-priority': 7,
+                'x-message-ttl': 1800000,  # 30 minutes TTL
+                'x-dead-letter-exchange': 'ai_agent',
+                'x-dead-letter-routing-key': 'dead_letter.ai'
+            }),
         
         # Queue pour tests
-        Queue('tests', 
-              exchange=default_exchange, 
-              routing_key='test.*',
-              queue_arguments={
-                  'x-max-priority': 3,
-                  'x-message-ttl': 1200000,  # 20 minutes TTL
-                  'x-dead-letter-exchange': 'ai_agent',
-                  'x-dead-letter-routing-key': 'dead_letter.test'
-              }),
+        Queue('tests',
+            exchange=default_exchange,
+            routing_key='test.*',
+            queue_arguments={
+                'x-max-priority': 3,
+                'x-message-ttl': 1200000,  # 20 minutes TTL
+                'x-dead-letter-exchange': 'ai_agent',
+                'x-dead-letter-routing-key': 'dead_letter.test'
+            }),
         
         # Dead Letter Queue pour les tâches échouées
-        Queue('dlq', 
-              exchange=default_exchange, 
-              routing_key='dead_letter.*',
-              queue_arguments={
-                  'x-message-ttl': 86400000,  # 24 heures TTL
-              }),
+        Queue('dlq',
+            exchange=default_exchange,
+            routing_key='dead_letter.*',
+            queue_arguments={
+                'x-message-ttl': 86400000,  # 24 heures TTL
+            }),
     ],
     
     # Routing des tâches vers les queues spécialisées
@@ -194,15 +194,15 @@ def process_monday_webhook(self, payload: Dict[str, Any], signature: Optional[st
     # ✅ Vérification de déduplication simple pour les items de test
     if str(monday_item_id).startswith('test_connection'):
         # Pour les tests, permettre le traitement mais avec logging adapté
-        logger.info(f"🧪 Traitement item de test {monday_item_id}", 
-                   task_id=task_id, 
-                   queue="webhooks")
+        logger.info(f"🧪 Traitement item de test {monday_item_id}",
+                    task_id=task_id,
+                    queue="webhooks")
     else:
-        logger.info("🚀 Démarrage traitement webhook Celery", 
-                   task_id=task_id, 
-                   monday_item_id=monday_item_id,
-                   queue="webhooks",
-                   routing_key="webhook.monday")
+        logger.info("🚀 Démarrage traitement webhook Celery",
+                    task_id=task_id,
+                    monday_item_id=monday_item_id,
+                    queue="webhooks",
+                    routing_key="webhook.monday")
     
     # Traitement synchrone du webhook (conversion async → sync)
     try:
@@ -229,18 +229,67 @@ def process_monday_webhook(self, payload: Dict[str, Any], signature: Optional[st
             
             logger.info(f"🚀 Lancement workflow pour tâche {result['task_id']}")
             
-            # Extraire les informations de la tâche du payload
-            task_info = payload.get('event', {})
+            # ✅ CORRECTION CRITIQUE: Charger les données complètes depuis la DB
+            task_db_id = result['task_id']
             
-            # Créer TaskRequest à partir du webhook
-            task_request = TaskRequest(
-                task_id=result['task_id'],
-                title=task_info.get('pulseName', 'Tâche Monday.com'),
-                description=task_info.get('description', ''),
-                priority=task_info.get('priority', 'medium'),
-                monday_item_id=task_info.get('pulseId'),
-                board_id=task_info.get('boardId')
-            )
+            # Fonction async pour charger les données depuis la DB
+            async def load_task_from_db(task_id: int) -> Dict[str, Any]:
+                """Charge les données complètes de la tâche depuis la base de données."""
+                import asyncpg
+                conn = None
+                try:
+                    # Utiliser database_url directement
+                    conn = await asyncpg.connect(get_settings().database_url)
+                    
+                    task_data = await conn.fetchrow("""
+                        SELECT tasks_id, monday_item_id, monday_board_id, title, description,
+                            priority, repository_url, repository_name, default_branch,
+                            monday_status, internal_status
+                        FROM tasks
+                        WHERE tasks_id = $1
+                    """, task_id)
+                    
+                    if not task_data:
+                        raise ValueError(f"Tâche {task_id} non trouvée dans la DB")
+                    
+                    return dict(task_data)
+                finally:
+                    if conn:
+                        await conn.close()
+            
+            try:
+                # Charger les données depuis la DB (conversion async → sync)
+                task_data = asyncio.run(load_task_from_db(task_db_id))
+                
+                logger.info(f"✅ Données tâche chargées depuis DB: {task_data['title']}")
+                logger.info(f"📄 Description: {task_data['description'][:100] if task_data['description'] else 'N/A'}...")
+                logger.info(f"🔗 Repository URL: {task_data['repository_url'] or 'N/A'}")
+                
+                # Créer TaskRequest avec les données complètes de la DB
+                task_request = TaskRequest(
+                    task_id=str(task_data['monday_item_id'] or task_db_id),
+                    title=task_data['title'],
+                    description=task_data['description'] or '',
+                    priority=task_data['priority'] or 'medium',
+                    repository_url=task_data['repository_url'] or '',
+                    branch_name=task_data['default_branch'] or 'main',
+                    monday_item_id=task_data['monday_item_id'],
+                    board_id=task_data['monday_board_id'],
+                    task_db_id=task_db_id
+                )
+            except Exception as e:
+                logger.error(f"❌ Erreur chargement tâche depuis DB: {e}")
+                # Fallback sur les données du payload
+                task_info = payload.get('event', {})
+                task_request = TaskRequest(
+                    task_id=str(task_db_id),
+                    title=task_info.get('pulseName', 'Tâche Monday.com'),
+                    description=task_info.get('description', ''),
+                    priority=task_info.get('priority', 'medium'),
+                    monday_item_id=task_info.get('pulseId'),
+                    board_id=task_info.get('boardId'),
+                    task_db_id=task_db_id
+                )
             
             # Lancer le workflow via Celery avec délai pour éviter la surcharge
             workflow_task = execute_workflow.apply_async(
@@ -303,7 +352,9 @@ def process_monday_webhook(self, payload: Dict[str, Any], signature: Optional[st
     name="ai_agent_background.execute_workflow",
     autoretry_for=(Exception,),
     retry_kwargs={'max_retries': 3, 'countdown': 120},
-    priority=5
+    priority=5,
+    acks_late=True,
+    reject_on_worker_lost=True
 )
 def execute_workflow(self, task_request_dict: Dict[str, Any]):
     """
@@ -316,6 +367,71 @@ def execute_workflow(self, task_request_dict: Dict[str, Any]):
     
     # Reconstruire l'objet TaskRequest
     task_request = TaskRequest(**task_request_dict)
+    
+    # ✅ CORRECTION: Vérifier si ce workflow est déjà completed avant de le relancer
+    if hasattr(task_request, 'task_db_id') and task_request.task_db_id:
+        try:
+            import asyncpg
+            
+            # ✅ CORRECTION: Utiliser une nouvelle event loop de manière sécurisée pour Celery
+            def check_if_completed_sync(task_id: int) -> bool:
+                """Vérifie si la tâche est déjà completed (version synchrone pour Celery)."""
+                loop = None
+                try:
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    
+                    async def _check():
+                        conn = None
+                        try:
+                            conn = await asyncpg.connect(get_settings().database_url)
+                            result = await conn.fetchrow("""
+                                SELECT 
+                                    t.internal_status,
+                                    (SELECT COUNT(*) FROM task_runs WHERE task_id = t.tasks_id) as task_runs_count
+                                FROM tasks t
+                                WHERE t.tasks_id = $1
+                            """, task_id)
+                            
+                            if result:
+                                # Si le statut est completed et qu'il y a déjà eu au moins un run
+                                if result['internal_status'] == 'completed' and result['task_runs_count'] > 0:
+                                    return True
+                            return False
+                        except Exception as e:
+                            logger.debug(f"Erreur vérification statut completed: {e}")
+                            return False
+                        finally:
+                            if conn:
+                                try:
+                                    await conn.close()
+                                except Exception:
+                                    pass
+                    
+                    return loop.run_until_complete(_check())
+                except Exception as e:
+                    logger.debug(f"Erreur check_if_completed_sync: {e}")
+                    return False
+                finally:
+                    if loop and not loop.is_closed():
+                        try:
+                            loop.close()
+                        except Exception:
+                            pass
+            
+            is_completed = check_if_completed_sync(task_request.task_db_id)
+            
+            if is_completed:
+                logger.warning(f"⚠️ Workflow déjà completed pour tâche {task_request.task_db_id} - abandon du re-démarrage")
+                return {
+                    "task_id": task_id,
+                    "workflow_id": workflow_id,
+                    "status": "skipped",
+                    "message": "Workflow déjà completed - évite le re-démarrage après SIGSEGV",
+                    "queue": "workflows"
+                }
+        except Exception as check_error:
+            logger.warning(f"⚠️ Impossible de vérifier le statut completed: {check_error}")
     
     # ✅ CORRECTION: Bloquer les tâches de test automatiques
     if hasattr(task_request, 'task_id') and task_request.task_id and (
@@ -346,10 +462,10 @@ def execute_workflow(self, task_request_dict: Dict[str, Any]):
                 "queue": "workflows"
             }
     
-    logger.info("🔄 Démarrage workflow LangGraph", 
-               task_id=task_id,
-               workflow_title=task_request.title,
-               queue="workflows")
+    logger.info("🔄 Démarrage workflow LangGraph",
+                task_id=task_id,
+                workflow_title=task_request.title,
+                queue="workflows")
     
     try:
         # Configurer le Python path pour Celery
@@ -359,40 +475,50 @@ def execute_workflow(self, task_request_dict: Dict[str, Any]):
         if project_root not in sys.path:
             sys.path.insert(0, project_root)
         
+        # Helper pour gérer les opérations async de manière sécurisée
+        def run_async_safe(coro):
+            """Exécute une coroutine de manière sécurisée en gérant l'event loop."""
+            try:
+                # Essayer d'obtenir la boucle actuelle
+                try:
+                    loop = asyncio.get_event_loop()
+                    if loop.is_closed():
+                        raise RuntimeError("Event loop is closed")
+                except RuntimeError:
+                    # Créer une nouvelle boucle si nécessaire
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                
+                return loop.run_until_complete(coro)
+            except Exception as e:
+                logger.warning(f"⚠️ Erreur exécution async: {e}")
+                return None
+        
         # Démarrer le monitoring du workflow
         try:
-            asyncio.run(
+            run_async_safe(
                 monitoring_service.start_workflow_monitoring(workflow_id, task_request_dict)
             )
-        except RuntimeError as e:
-            if "Event loop is closed" in str(e):
-                logger.warning("⚠️ Event loop fermé lors du démarrage monitoring - ignoré")
-            else:
-                logger.error(f"❌ Erreur démarrage monitoring: {e}")
         except Exception as e:
             logger.warning(f"⚠️ Erreur démarrage monitoring: {e}")
         
         # Exécuter le workflow (import paresseux pour éviter l'importation circulaire)
         from graph.workflow_graph import run_workflow
-        result = asyncio.run(run_workflow(task_request))
+        result = run_async_safe(run_workflow(task_request))
         
         # Finaliser le monitoring
         try:
-            asyncio.run(
+            run_async_safe(
                 monitoring_service.complete_workflow(workflow_id, result.get('success', False), result)
             )
-        except RuntimeError as e:
-            if "Event loop is closed" in str(e):
-                logger.warning("⚠️ Event loop fermé lors de la finalisation monitoring - ignoré")
-            else:
-                logger.error(f"❌ Erreur finalisation monitoring: {e}")
         except Exception as e:
-            logger.error(f"❌ Erreur finalisation services: {e}")
+            # Logging silencieux pour éviter le bruit dans les logs
+            logger.debug(f"Erreur non-critique finalisation monitoring: {e}")
         
         logger.info("✅ Workflow terminé", 
-                   task_id=task_id,
-                   success=result.get('success', False),
-                   duration=result.get('duration', 0))
+                    task_id=task_id,
+                    success=result.get('success', False),
+                    duration=result.get('duration', 0))
         
         return {
             "task_id": task_id,
@@ -408,18 +534,29 @@ def execute_workflow(self, task_request_dict: Dict[str, Any]):
                     error=str(exc), 
                     exc_info=True)
         
-        # Finaliser le monitoring en cas d'erreur
+        # Finaliser le monitoring en cas d'erreur avec gestion sécurisée de l'event loop
         try:
-            asyncio.run(
+            def run_async_safe_error(coro):
+                """Exécute une coroutine de manière sécurisée en gérant l'event loop."""
+                try:
+                    try:
+                        loop = asyncio.get_event_loop()
+                        if loop.is_closed():
+                            raise RuntimeError("Event loop is closed")
+                    except RuntimeError:
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                    return loop.run_until_complete(coro)
+                except Exception as e:
+                    logger.debug(f"Erreur non-critique finalisation monitoring erreur: {e}")
+                    return None
+            
+            run_async_safe_error(
                 monitoring_service.complete_workflow(workflow_id, False)
             )
-        except RuntimeError as e:
-            if "Event loop is closed" in str(e):
-                logger.warning("⚠️ Event loop fermé lors de la finalisation d'erreur - ignoré")
-            else:
-                logger.error(f"❌ Erreur finalisation monitoring erreur: {e}")
         except Exception as e:
-            logger.warning(f"⚠️ Erreur finalisation monitoring erreur: {e}")
+            # Logging silencieux pour éviter le bruit
+            logger.debug(f"Erreur non-critique finalisation monitoring erreur: {e}")
         
         # ✅ CORRECTION: Éviter les retries inutiles sur les échecs métier 
         # Ne retry que sur les erreurs d'infrastructure et Claude surchargé
@@ -505,9 +642,9 @@ def generate_code_task(self, prompt: str, provider: str = "claude", context: Dic
     from tools.ai_engine_hub import AIEngineHub
     
     logger.info("🤖 Génération code IA", 
-               task_id=task_id, 
-               provider=provider,
-               queue="ai_generation")
+                task_id=task_id, 
+                provider=provider,
+                queue="ai_generation")
     
     ai_hub = AIEngineHub()
     
@@ -518,9 +655,9 @@ def generate_code_task(self, prompt: str, provider: str = "claude", context: Dic
         )
         
         logger.info("✅ Code généré", 
-                   task_id=task_id,
-                   provider=provider,
-                   tokens_used=result.get('tokens_used', 0))
+                    task_id=task_id,
+                    provider=provider,
+                    tokens_used=result.get('tokens_used', 0))
         
         return {
             "task_id": task_id,
@@ -587,10 +724,10 @@ def run_tests_task(self, workflow_id: str, code_changes: Dict[str, str], test_ty
     from tools.testing_engine import TestingEngine
     
     logger.info("🧪 Exécution tests", 
-               task_id=task_id,
-               workflow_id=workflow_id,
-               test_types=test_types,
-               queue="tests")
+                task_id=task_id,
+                workflow_id=workflow_id,
+                test_types=test_types,
+                queue="tests")
     
     testing_engine = TestingEngine()
     
@@ -607,10 +744,10 @@ def run_tests_task(self, workflow_id: str, code_changes: Dict[str, str], test_ty
         )
         
         logger.info("✅ Tests terminés", 
-                   task_id=task_id,
-                   total_tests=total_tests,
-                   passed_tests=passed_tests,
-                   success_rate=f"{(passed_tests/total_tests*100):.1f}%" if total_tests > 0 else "0%")
+                    task_id=task_id,
+                    total_tests=total_tests,
+                    passed_tests=passed_tests,
+                    success_rate=f"{(passed_tests/total_tests*100):.1f}%" if total_tests > 0 else "0%")
         
         return {
             "task_id": task_id,
@@ -757,9 +894,9 @@ celery_app.conf.beat_schedule = {
 def worker_ready_handler(sender=None, **kwargs):
     """Signal émis quand un worker Celery est prêt."""
     logger.info("🚀 Celery worker prêt", 
-               worker=sender,
-               broker="RabbitMQ",
-               backend="PostgreSQL")
+                worker=sender,
+                broker="RabbitMQ",
+                backend="PostgreSQL")
     
     # Initialiser la persistence et le monitoring
     try:
@@ -791,22 +928,36 @@ def worker_shutting_down_handler(sender=None, **kwargs):
     # Finaliser les services de manière sécurisée
     def finalize_services():
         """Finalise les services en créant une nouvelle boucle si nécessaire."""
+        loop = None
         try:
             # Créer une nouvelle boucle d'événements pour la finalisation
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             
+            # Fermer la persistence avec gestion d'erreur
             try:
                 loop.run_until_complete(db_persistence.close())
                 logger.info("✅ Persistence fermée")
+            except Exception as e:
+                logger.debug(f"Erreur non-critique fermeture persistence: {e}")
+            
+            # Arrêter le monitoring avec gestion d'erreur
+            try:
                 loop.run_until_complete(monitoring_service.stop_monitoring())
                 logger.info("✅ Monitoring finalisé")
-            finally:
-                loop.close()
+            except Exception as e:
+                logger.debug(f"Erreur non-critique arrêt monitoring: {e}")
                 
         except Exception as e:
-            # Log mais ne pas lever d'exception pour éviter d'interrompre l'arrêt
-            logger.error(f"❌ Erreur finalisation services: {e}")
+            # Log en mode debug pour éviter le bruit dans les logs
+            logger.debug(f"Erreur non-critique finalisation services: {e}")
+        finally:
+            # S'assurer que la boucle est fermée proprement
+            if loop and not loop.is_closed():
+                try:
+                    loop.close()
+                except Exception:
+                    pass
     
     # Lancer la finalisation en arrière-plan pour ne pas bloquer l'arrêt
     import threading
@@ -827,9 +978,9 @@ def submit_task(task_name: str, *args, **kwargs):
             
         task = celery_app.send_task(task_name, args=args, kwargs=kwargs, **task_options)
         logger.info("📨 Tâche soumise", 
-                   task_name=task_name, 
-                   task_id=task.id,
-                   broker="RabbitMQ")
+                    task_name=task_name, 
+                    task_id=task.id,
+                    broker="RabbitMQ")
         return task
     except Exception as exc:
         logger.error("❌ Erreur soumission tâche", 

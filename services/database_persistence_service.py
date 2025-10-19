@@ -78,13 +78,36 @@ class DatabasePersistenceService:
                 """Extrait le texte d'une colonne de manière sécurisée."""
                 col_data = normalized_columns.get(col_id, {})
                 if isinstance(col_data, dict):
+                    # Pour les colonnes de type "link", essayer url et text
+                    col_type = col_data.get("type", "")
+                    if col_type == "link":
+                        # Essayer d'abord la propriété "url"
+                        url_value = col_data.get("url")
+                        if url_value:
+                            return url_value.strip()
+                        # Sinon essayer "text"
+                        text_value = col_data.get("text")
+                        if text_value:
+                            return text_value.strip()
+                    
                     # Essayer plusieurs propriétés possibles
                     return (col_data.get("text") or
                            col_data.get("value") or
+                           col_data.get("url") or
                            str(col_data.get("display_value", "")) or
                            default).strip()
                 return default
 
+            # ✅ NOUVEAU: Vérifier d'abord la colonne Repository URL configurée
+            from config.settings import get_settings
+            settings = get_settings()
+            
+            if settings.monday_repository_url_column_id:
+                extracted_url = safe_extract_text(settings.monday_repository_url_column_id)
+                if extracted_url:
+                    repository_url = extracted_url
+                    logger.info(f"🔗 URL repository trouvée dans colonne configurée ({settings.monday_repository_url_column_id}): {repository_url}")
+            
             # ✅ AMÉLIORATION: Parser les colonnes avec noms multiples possibles
             for col_id, col_value in normalized_columns.items():
                 col_id_lower = col_id.lower()
@@ -104,8 +127,8 @@ class DatabasePersistenceService:
                         priority = extracted_priority
                         logger.info(f"📊 Priorité trouvée: {priority}")
 
-                # URL Repository - essayer plusieurs variantes
-                elif any(keyword in col_id_lower for keyword in
+                # URL Repository - essayer plusieurs variantes (si pas encore trouvée)
+                elif not repository_url and any(keyword in col_id_lower for keyword in
                         ["repo", "repository", "url", "github", "git", "project"]):
                     extracted_url = safe_extract_text(col_id)
                     if extracted_url and ("github.com" in extracted_url or "git" in extracted_url):
@@ -153,6 +176,17 @@ class DatabasePersistenceService:
             # Utiliser custom_run_id si fourni, sinon celery_task_id
             effective_task_id = custom_run_id or celery_task_id
 
+            # ✅ CORRECTION: Vérifier le statut AVANT d'insérer le run (éviter race condition)
+            if task_id:
+                current_status = await conn.fetchval("""
+                    SELECT internal_status FROM tasks WHERE tasks_id = $1
+                """, task_id)
+                
+                # Ne pas créer de nouveau run si la tâche est déjà completed
+                if current_status == 'completed':
+                    logger.warning(f"⚠️ Tentative de créer un nouveau run pour tâche {task_id} déjà completed - abandon")
+                    raise ValueError(f"Invalid status transition from completed to processing")
+            
             # Obtenir le numéro de run suivant
             if task_id:
                 run_number = await conn.fetchval("""
@@ -178,7 +212,7 @@ class DatabasePersistenceService:
                 ai_provider, "prepare_environment", 0
             )
 
-            # Mettre à jour la tâche si task_id existe
+            # Mettre à jour la tâche si task_id existe (statut déjà vérifié ci-dessus)
             if task_id:
                 await conn.execute("""
                     UPDATE tasks
@@ -491,6 +525,32 @@ class DatabasePersistenceService:
 
             logger.info(f"🔀 Pull request créée: {pr_id} - {github_pr_url}")
             return pr_id
+
+    async def update_last_merged_pr_url(self, task_run_id: int, last_merged_pr_url: str):
+        """
+        Met à jour l'URL de la dernière PR fusionnée récupérée depuis GitHub.
+        
+        Args:
+            task_run_id: ID du task_run
+            last_merged_pr_url: URL de la dernière PR fusionnée
+        """
+        if not self.pool:
+            logger.warning("Pool de connexion non initialisé - impossible de sauvegarder last_merged_pr_url")
+            return False
+        
+        try:
+            async with self.pool.acquire() as conn:
+                await conn.execute("""
+                    UPDATE task_runs
+                    SET last_merged_pr_url = $1
+                    WHERE tasks_runs_id = $2
+                """, last_merged_pr_url, task_run_id)
+                
+                logger.info(f"✅ URL dernière PR fusionnée sauvegardée en base: {last_merged_pr_url}")
+                return True
+        except Exception as e:
+            logger.error(f"❌ Erreur lors de la sauvegarde de last_merged_pr_url: {e}")
+            return False
 
     async def complete_task_run(self, task_run_id: int, status: str = "completed",
                                result: Dict[str, Any] = None, error_message: str = None):
@@ -840,6 +900,146 @@ class DatabasePersistenceService:
         except Exception as e:
             logger.error(f"❌ Erreur sauvegarde checkpoint atomique: {e}")
             raise
+    
+    # ===== MÉTHODES POUR TASK_UPDATE_TRIGGERS =====
+    
+    async def create_update_trigger(
+        self,
+        task_id: int,
+        monday_update_id: str,
+        webhook_id: Optional[int],
+        update_text: str,
+        detected_type: str,
+        confidence: float,
+        requires_workflow: bool,
+        analysis_reasoning: str,
+        extracted_requirements: Optional[Dict[str, Any]] = None
+    ) -> int:
+        """
+        Enregistre un déclenchement de workflow depuis un update Monday.
+        
+        Args:
+            task_id: ID de la tâche
+            monday_update_id: ID de l'update Monday.com
+            webhook_id: ID du webhook (optionnel)
+            update_text: Texte du commentaire
+            detected_type: Type détecté (UpdateType)
+            confidence: Confiance du LLM (0-1)
+            requires_workflow: Si un workflow est requis
+            analysis_reasoning: Explication de l'analyse
+            extracted_requirements: Requirements extraits (JSON)
+            
+        Returns:
+            ID du trigger créé
+        """
+        async with self.pool.acquire() as conn:
+            trigger_id = await conn.fetchval("""
+                INSERT INTO task_update_triggers (
+                    task_id, monday_update_id, webhook_id, update_text,
+                    detected_type, confidence, requires_workflow,
+                    analysis_reasoning, extracted_requirements
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                RETURNING trigger_id
+            """,
+                task_id, monday_update_id, webhook_id, update_text,
+                detected_type, confidence, requires_workflow,
+                analysis_reasoning,
+                json.dumps(extracted_requirements) if extracted_requirements else None
+            )
+            
+            logger.info(f"📝 Update trigger créé: {trigger_id} (type={detected_type}, confidence={confidence})")
+            return trigger_id
+    
+    async def mark_trigger_as_processed(
+        self,
+        trigger_id: int,
+        triggered_workflow: bool,
+        new_run_id: Optional[int] = None,
+        celery_task_id: Optional[str] = None
+    ):
+        """
+        Marque un trigger comme traité.
+        
+        Args:
+            trigger_id: ID du trigger
+            triggered_workflow: Si un workflow a été déclenché
+            new_run_id: ID du nouveau run créé (si applicable)
+            celery_task_id: ID de la tâche Celery (si applicable)
+        """
+        async with self.pool.acquire() as conn:
+            await conn.execute("""
+                UPDATE task_update_triggers
+                SET triggered_workflow = $1,
+                    new_run_id = $2,
+                    celery_task_id = $3,
+                    processed_at = NOW()
+                WHERE trigger_id = $4
+            """,
+                triggered_workflow, new_run_id, celery_task_id, trigger_id
+            )
+            
+            logger.debug(f"✅ Trigger {trigger_id} marqué comme traité (workflow={triggered_workflow})")
+    
+    async def get_task_update_triggers(
+        self,
+        task_id: int,
+        limit: int = 10
+    ) -> List[Dict[str, Any]]:
+        """
+        Récupère les triggers d'update pour une tâche.
+        
+        Args:
+            task_id: ID de la tâche
+            limit: Nombre maximum de résultats
+            
+        Returns:
+            Liste des triggers
+        """
+        async with self.pool.acquire() as conn:
+            rows = await conn.fetch("""
+                SELECT 
+                    trigger_id,
+                    monday_update_id,
+                    update_text,
+                    detected_type,
+                    confidence,
+                    requires_workflow,
+                    triggered_workflow,
+                    new_run_id,
+                    created_at,
+                    processed_at
+                FROM task_update_triggers
+                WHERE task_id = $1
+                ORDER BY created_at DESC
+                LIMIT $2
+            """, task_id, limit)
+            
+            return [dict(row) for row in rows]
+    
+    async def get_update_trigger_stats(self) -> Dict[str, Any]:
+        """
+        Récupère les statistiques des triggers d'update.
+        
+        Returns:
+            Dictionnaire avec les statistiques
+        """
+        async with self.pool.acquire() as conn:
+            stats = await conn.fetch("""
+                SELECT 
+                    detected_type,
+                    COUNT(*) AS total_count,
+                    SUM(CASE WHEN requires_workflow THEN 1 ELSE 0 END) AS requires_workflow_count,
+                    SUM(CASE WHEN triggered_workflow THEN 1 ELSE 0 END) AS triggered_workflow_count,
+                    AVG(confidence) AS avg_confidence
+                FROM task_update_triggers
+                GROUP BY detected_type
+                ORDER BY total_count DESC
+            """)
+            
+            return {
+                "by_type": [dict(row) for row in stats],
+                "total": sum(row['total_count'] for row in stats)
+            }
 
 
 # Instance globale

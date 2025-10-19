@@ -185,34 +185,154 @@ class WebhookPersistenceService:
         try:
             pulse_id = payload.get("pulseId")
             update_text = payload.get("textBody", "")
+            update_id = payload.get("updateId") or payload.get("id") or f"update_{pulse_id}_{webhook_id}"
+            
+            # 🔔 Log de debugging pour tracer la réception
+            logger.info(f"🔔 WEBHOOK UPDATE REÇU: pulse_id={pulse_id}, "
+                       f"text='{update_text[:50]}...', webhook_id={webhook_id}")
             
             # Rechercher la tâche liée
             task_id = await db_persistence._find_task_by_monday_id(pulse_id)
             
-            if task_id:
-                # Logger le commentaire comme événement applicatif
-                await db_persistence.log_application_event(
-                    task_id=task_id,
-                    level="INFO",
-                    source_component="monday_webhook",
-                    action="item_update_received",
-                    message=f"Commentaire Monday.com: {update_text[:200]}...",
-                    metadata={
-                        "webhook_id": webhook_id,
-                        "full_text": update_text,
-                        "monday_pulse_id": pulse_id
-                    }
+            if not task_id:
+                logger.warning(f"⚠️ Tâche non trouvée pour pulse_id {pulse_id}")
+                return
+            
+            # ✅ NOUVEAU: Récupérer les détails de la tâche
+            async with db_persistence.pool.acquire() as conn:
+                task_details = await conn.fetchrow("""
+                    SELECT 
+                        tasks_id,
+                        monday_item_id,
+                        title,
+                        description,
+                        internal_status,
+                        monday_status,
+                        repository_url,
+                        priority,
+                        task_type
+                    FROM tasks 
+                    WHERE tasks_id = $1
+                """, task_id)
+            
+            if not task_details:
+                logger.error(f"❌ Impossible de récupérer les détails de la tâche {task_id}")
+                return
+            
+            # ✅ NOUVEAU: Vérifier si la tâche est terminée
+            is_completed = (
+                task_details['internal_status'] == 'completed' or
+                task_details['monday_status'] == 'Done'
+            )
+            
+            # Logger le commentaire
+            await db_persistence.log_application_event(
+                task_id=task_id,
+                level="INFO",
+                source_component="monday_webhook",
+                action="item_update_received",
+                message=f"Commentaire Monday.com: {update_text[:200]}...",
+                metadata={
+                    "webhook_id": webhook_id,
+                    "full_text": update_text,
+                    "monday_pulse_id": pulse_id,
+                    "update_id": update_id,
+                    "task_completed": is_completed
+                }
+            )
+            
+            await db_persistence._link_webhook_to_task(webhook_id, task_id)
+            
+            # ✅ NOUVEAU: Si tâche terminée, analyser le commentaire
+            if is_completed:
+                logger.info(f"🔍 Tâche {task_id} terminée - analyse du commentaire pour nouveau workflow")
+                
+                # Initialiser les services d'analyse
+                from services.update_analyzer_service import update_analyzer_service
+                from services.workflow_trigger_service import workflow_trigger_service
+                
+                # Préparer le contexte pour l'analyse
+                context = {
+                    "task_title": task_details['title'],
+                    "task_status": task_details['internal_status'],
+                    "monday_status": task_details['monday_status'],
+                    "original_description": task_details['description'] or ""
+                }
+                
+                # Analyser l'intention du commentaire
+                update_analysis = await update_analyzer_service.analyze_update_intent(
+                    update_text=update_text,
+                    context=context
                 )
                 
-                # Lier le webhook
-                await db_persistence._link_webhook_to_task(webhook_id, task_id)
+                logger.info(f"📊 Analyse update: type={update_analysis.type}, "
+                          f"requires_workflow={update_analysis.requires_workflow}, "
+                          f"confidence={update_analysis.confidence}")
                 
-                logger.info(f"💬 Commentaire Monday traité pour tâche {task_id}")
+                # Enregistrer le trigger dans la DB (même si pas de workflow)
+                trigger_id = await db_persistence.create_update_trigger(
+                    task_id=task_id,
+                    monday_update_id=update_id,
+                    webhook_id=webhook_id,
+                    update_text=update_text,
+                    detected_type=update_analysis.type,
+                    confidence=update_analysis.confidence,
+                    requires_workflow=update_analysis.requires_workflow,
+                    analysis_reasoning=update_analysis.reasoning,
+                    extracted_requirements=update_analysis.extracted_requirements
+                )
+                
+                # ✅ NOUVEAU: Si c'est une nouvelle demande, déclencher le workflow
+                if update_analysis.requires_workflow and update_analysis.confidence > 0.7:
+                    logger.info(f"🚀 Déclenchement d'un nouveau workflow depuis update {update_id}")
+                    
+                    try:
+                        trigger_result = await workflow_trigger_service.trigger_workflow_from_update(
+                            task_id=task_id,
+                            update_analysis=update_analysis,
+                            monday_item_id=task_details['monday_item_id'],
+                            update_id=update_id
+                        )
+                        
+                        if trigger_result['success']:
+                            logger.info(f"✅ Nouveau workflow déclenché: run_id={trigger_result['run_id']}, "
+                                      f"celery_task_id={trigger_result['celery_task_id']}")
+                            
+                            # Marquer le trigger comme traité avec succès
+                            await db_persistence.mark_trigger_as_processed(
+                                trigger_id=trigger_id,
+                                triggered_workflow=True,
+                                new_run_id=trigger_result['run_id'],
+                                celery_task_id=trigger_result['celery_task_id']
+                            )
+                        else:
+                            logger.error(f"❌ Échec déclenchement workflow: {trigger_result.get('error')}")
+                            # Marquer le trigger comme traité mais sans workflow
+                            await db_persistence.mark_trigger_as_processed(
+                                trigger_id=trigger_id,
+                                triggered_workflow=False
+                            )
+                            
+                    except Exception as e:
+                        logger.error(f"❌ Erreur lors du déclenchement du workflow: {e}", exc_info=True)
+                        # Marquer le trigger comme traité mais échoué
+                        await db_persistence.mark_trigger_as_processed(
+                            trigger_id=trigger_id,
+                            triggered_workflow=False
+                        )
+                else:
+                    logger.info(f"ℹ️ Commentaire analysé mais pas de workflow requis: "
+                              f"type={update_analysis.type}, confidence={update_analysis.confidence}")
+                    # Marquer le trigger comme traité (analyse seulement)
+                    await db_persistence.mark_trigger_as_processed(
+                        trigger_id=trigger_id,
+                        triggered_workflow=False
+                    )
             else:
-                logger.warning(f"⚠️ Tâche non trouvée pour pulse_id {pulse_id}")
+                logger.info(f"💬 Commentaire traité pour tâche en cours {task_id} (status={task_details['internal_status']})")
                 
         except Exception as e:
-            logger.error(f"❌ Erreur traitement update event: {e}")
+            logger.error(f"❌ Erreur traitement update event: {e}", exc_info=True)
             raise
     
     @staticmethod

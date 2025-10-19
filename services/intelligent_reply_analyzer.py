@@ -15,8 +15,8 @@ settings = get_settings()
 
 class IntentionType(Enum):
     """Types d'intention détectés."""
-    APPROVE = "approve"
-    REJECT = "reject"
+    APPROVE = "approved"  # Corrigé: approve -> approved pour correspondre à la DB
+    REJECT = "rejected"   # Corrigé: reject -> rejected pour correspondre à la DB
     QUESTION = "question"
     UNCLEAR = "unclear"
     CLARIFICATION_NEEDED = "clarification_needed"

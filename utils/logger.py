@@ -1,6 +1,7 @@
 """Module de logging structuré avec support Rich et couleurs."""
 
 import logging
+import sys
 import structlog
 from rich.console import Console
 from rich.logging import RichHandler
@@ -15,18 +16,41 @@ def configure_logging(debug: bool = False, log_level: str = "INFO") -> None:
         debug: Mode debug activé
         log_level: Niveau de log (DEBUG, INFO, WARNING, ERROR)
     """
-    # Configuration du niveau de log
+    # ✅ CORRECTION CRITIQUE: Forcer l'encodage UTF-8 pour tous les outputs
+    # Cela permet d'afficher correctement les emojis et caractères spéciaux
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    if hasattr(sys.stderr, 'reconfigure'):
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    
+    # ✅ CORRECTION: Configuration du niveau de log
+    # Forcer INFO pour éviter que les événements normaux apparaissent en WARNING
     level = getattr(logging, log_level.upper(), logging.INFO)
     
-    # Configuration de Rich pour les logs colorés
-    console = Console(force_terminal=True)
+    # ✅ AMÉLIORATION: Configurer le logger root à INFO pour Celery
+    # Celery utilise WARNING par défaut, ce qui cause tous les logs normaux à être WARNING
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+    
+    # Configuration de Rich pour les logs colorés avec support UTF-8
+    console = Console(
+        force_terminal=True,
+        # ✅ Forcer l'encoding UTF-8 pour Rich Console
+        force_interactive=False,
+        force_jupyter=False,
+        legacy_windows=False,  # Désactiver le mode legacy Windows
+        safe_box=False  # Permettre les caractères Unicode avancés
+    )
+    
     rich_handler = RichHandler(
         console=console,
         show_time=True,
         show_level=True,
         show_path=debug,
         markup=True,
-        rich_tracebacks=True
+        rich_tracebacks=True,
+        enable_link_path=False,  # Désactiver les liens pour éviter les problèmes d'encodage
+        omit_repeated_times=False
     )
     
     # Configuration du logger standard
@@ -34,20 +58,25 @@ def configure_logging(debug: bool = False, log_level: str = "INFO") -> None:
         level=level,
         format="%(message)s",
         datefmt="[%X]",
-        handlers=[rich_handler]
+        handlers=[rich_handler],
+        # ✅ Forcer UTF-8 au niveau du basicConfig
+        encoding='utf-8',
+        errors='replace'  # Remplacer les caractères non-encodables au lieu de crasher
     )
     
-    # Configuration de structlog
+    # Configuration de structlog avec support UTF-8
     structlog.configure(
         processors=[
             # Traitement des métadonnées
             structlog.contextvars.merge_contextvars,
             structlog.processors.add_log_level,
             structlog.processors.TimeStamper(fmt="iso"),
+            # ✅ AMÉLIORATION: Ajouter un processeur pour gérer les caractères Unicode
+            structlog.processors.UnicodeDecoder(),
             
             # Formatage conditionnel
             structlog.dev.ConsoleRenderer(colors=True) if debug 
-            else structlog.processors.JSONRenderer(),
+            else structlog.processors.JSONRenderer(ensure_ascii=False),  # ✅ Permettre Unicode dans JSON
         ],
         wrapper_class=structlog.make_filtering_bound_logger(level),
         logger_factory=structlog.PrintLoggerFactory(),
@@ -70,7 +99,19 @@ def get_logger(name: str) -> structlog.BoundLogger:
         configure_logging()
         get_logger._configured = True
     
-    return structlog.get_logger(name)
+    # ✅ CORRECTION: Mapper correctement les niveaux de log JSON
+    # Celery affiche tout en WARNING par défaut, forcer INFO pour événements normaux
+    logger = structlog.get_logger(name)
+    
+    # Pour Celery worker, forcer niveau INFO
+    # Cela évite que les événements normaux apparaissent comme WARNING
+    if 'celery' in name.lower() or 'worker' in name.lower():
+        # Obtenir le logger standard Python sous-jacent
+        import logging
+        py_logger = logging.getLogger(name)
+        py_logger.setLevel(logging.INFO)
+    
+    return logger
 
 
 class LoggerMixin:

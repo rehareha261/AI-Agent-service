@@ -1,7 +1,7 @@
 """Service de gestion des validations humaines avec persistance en base de données."""
 
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, Optional, List
 import asyncpg
 from models.schemas import (
@@ -22,6 +22,49 @@ class HumanValidationService:
     
     def __init__(self):
         self.db_pool = None
+    
+    def _validate_files_modified(self, files_modified: Any) -> List[str]:
+        """
+        Valide et normalise le champ files_modified pour s'assurer que c'est une liste de strings.
+        
+        Args:
+            files_modified: Peut être list, dict, ou autre type
+            
+        Returns:
+            Liste de strings (noms de fichiers)
+        """
+        try:
+            # Cas 1: Déjà une liste
+            if isinstance(files_modified, list):
+                # S'assurer que tous les éléments sont des strings
+                validated = [str(f) for f in files_modified if f]
+                logger.info(f"✅ files_modified validé: {len(validated)} fichiers (était déjà liste)")
+                return validated
+            
+            # Cas 2: Dict (code_changes) - extraire les clés
+            elif isinstance(files_modified, dict):
+                validated = list(files_modified.keys())
+                logger.warning(f"⚠️ files_modified était un dict - conversion en liste: {len(validated)} fichiers")
+                return validated
+            
+            # Cas 3: String unique
+            elif isinstance(files_modified, str):
+                logger.warning(f"⚠️ files_modified était un string - conversion en liste: 1 fichier")
+                return [files_modified]
+            
+            # Cas 4: None ou vide
+            elif not files_modified:
+                logger.warning("⚠️ files_modified était None/vide - retourne liste vide")
+                return []
+            
+            # Cas 5: Type inattendu
+            else:
+                logger.error(f"❌ Type inattendu pour files_modified: {type(files_modified)} - retourne liste vide")
+                return []
+                
+        except Exception as e:
+            logger.error(f"❌ Erreur validation files_modified: {e} - retourne liste vide")
+            return []
     
     async def init_db_pool(self):
         """Initialise le pool de connexions à la base de données."""
@@ -71,18 +114,12 @@ class HumanValidationService:
         
         try:
             async with self.db_pool.acquire() as conn:
-                # Préparer les données pour l'insertion
-                pr_info_json = None
-                if validation_request.pr_info:
-                    pr_info_json = {
-                        "number": getattr(validation_request.pr_info, 'number', None),
-                        "url": getattr(validation_request.pr_info, 'url', ''),
-                        "title": getattr(validation_request.pr_info, 'title', ''),
-                        "branch": getattr(validation_request.pr_info, 'branch', ''),
-                        "base_branch": getattr(validation_request.pr_info, 'base_branch', ''),
-                        "status": getattr(validation_request.pr_info, 'status', ''),
-                        "created_at": getattr(validation_request.pr_info, 'created_at', datetime.now()).isoformat()
-                    }
+                # ✅ CORRECTION: pr_info est maintenant déjà un JSON string grâce au validateur Pydantic
+                # Plus besoin de le convertir en dict ici
+                # Les champs generated_code, test_results et pr_info sont maintenant des JSON strings
+                
+                # ✅ VALIDATION CRITIQUE: S'assurer que files_modified est toujours une liste de strings
+                files_modified_validated = self._validate_files_modified(validation_request.files_modified)
                 
                 # Insérer la validation
                 await conn.execute("""
@@ -102,12 +139,12 @@ class HumanValidationService:
                     validation_request.original_request[:1000] if validation_request.original_request else None,  # Limite pour task_description 
                     validation_request.original_request,
                     HumanValidationStatus.PENDING.value,
-                    validation_request.generated_code,
+                    validation_request.generated_code,  # ✅ Déjà un JSON string
                     validation_request.code_summary,
-                    validation_request.files_modified,
+                    files_modified_validated,  # ✅ Utiliser la version validée
                     validation_request.implementation_notes,
-                    validation_request.test_results,
-                    pr_info_json,
+                    validation_request.test_results,  # ✅ Déjà un JSON string
+                    validation_request.pr_info,  # ✅ Déjà un JSON string (ou None)
                     validation_request.workflow_id,
                     validation_request.requested_by,
                     validation_request.created_at,
@@ -148,7 +185,7 @@ class HumanValidationService:
                         branch=pr_data.get('branch', ''),
                         base_branch=pr_data.get('base_branch', ''),
                         status=pr_data.get('status', ''),
-                        created_at=datetime.fromisoformat(pr_data.get('created_at', datetime.now().isoformat()))
+                        created_at=datetime.fromisoformat(pr_data.get('created_at', datetime.now(timezone.utc).isoformat()))
                     )
                 
                 # Créer l'objet HumanValidationRequest
@@ -267,7 +304,24 @@ class HumanValidationService:
                     # Calculer la durée de validation
                     validation_duration = None
                     if validation_row['created_at']:
-                        duration_delta = response.validated_at - validation_row['created_at']
+                        # ✅ CORRECTION: S'assurer que les deux datetimes ont la même timezone-awareness
+                        from datetime import timezone
+                        
+                        # Récupérer created_at de la DB (timezone-aware en UTC si configuré dans PostgreSQL)
+                        created_at = validation_row['created_at']
+                        
+                        # S'assurer que validated_at est aussi timezone-aware
+                        validated_at = response.validated_at
+                        if validated_at.tzinfo is None:
+                            # Si naive, ajouter UTC
+                            validated_at = validated_at.replace(tzinfo=timezone.utc)
+                        
+                        # S'assurer que created_at est aussi timezone-aware
+                        if created_at.tzinfo is None:
+                            # Si naive, ajouter UTC
+                            created_at = created_at.replace(tzinfo=timezone.utc)
+                        
+                        duration_delta = validated_at - created_at
                         validation_duration = int(duration_delta.total_seconds())
                     
                     # Insérer la réponse
@@ -318,7 +372,7 @@ class HumanValidationService:
                     "expired_validations": row['expired_validations'] or 0,
                     "avg_validation_time_minutes": float(row['avg_validation_time_minutes'] or 0),
                     "urgent_validations": row['urgent_validations'] or 0,
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now(timezone.utc).isoformat()
                 }
                 
         except Exception as e:
@@ -331,8 +385,197 @@ class HumanValidationService:
                 "expired_validations": 0,
                 "avg_validation_time_minutes": 0.0,
                 "urgent_validations": 0,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }
+    
+    async def create_validation_action(
+        self,
+        validation_id: str,
+        action_type: str,
+        action_data: Optional[Dict[str, Any]] = None
+    ) -> Optional[int]:
+        """
+        Crée une action post-validation (merge PR, update Monday, etc.).
+        
+        Args:
+            validation_id: ID de la validation
+            action_type: Type d'action ('merge_pr', 'reject_pr', 'update_monday', 'cleanup_branch', 'notify_user')
+            action_data: Données spécifiques à l'action
+            
+        Returns:
+            ID de l'action créée ou None si échec
+        """
+        if not self.db_pool:
+            await self.init_db_pool()
+        
+        # Valider le type d'action
+        valid_action_types = ['merge_pr', 'reject_pr', 'update_monday', 'cleanup_branch', 'notify_user']
+        if action_type not in valid_action_types:
+            logger.error(f"❌ Type d'action invalide: {action_type}. Valides: {valid_action_types}")
+            return None
+        
+        try:
+            async with self.db_pool.acquire() as conn:
+                # Récupérer l'ID de validation pour la référence
+                validation_row = await conn.fetchrow("""
+                    SELECT human_validations_id FROM human_validations
+                    WHERE validation_id = $1
+                """, validation_id)
+                
+                if not validation_row:
+                    logger.error(f"❌ Validation {validation_id} non trouvée")
+                    return None
+                
+                # Insérer l'action
+                import json
+                action_id = await conn.fetchval("""
+                    INSERT INTO validation_actions (
+                        human_validation_id, validation_id, action_type,
+                        action_status, action_data, created_at
+                    ) VALUES ($1, $2, $3, $4, $5, NOW())
+                    RETURNING validation_actions_id
+                """,
+                    validation_row['human_validations_id'],
+                    validation_id,
+                    action_type,
+                    'pending',
+                    json.dumps(action_data) if action_data else None
+                )
+                
+                logger.info(f"✅ Action {action_type} créée pour validation {validation_id}: ID={action_id}")
+                return action_id
+                
+        except Exception as e:
+            logger.error(f"❌ Erreur création action pour {validation_id}: {e}")
+            return None
+    
+    async def update_validation_action(
+        self,
+        action_id: int,
+        status: str,
+        result_data: Optional[Dict[str, Any]] = None,
+        error_message: Optional[str] = None,
+        merge_commit_hash: Optional[str] = None,
+        merge_commit_url: Optional[str] = None
+    ) -> bool:
+        """
+        Met à jour le statut d'une action de validation.
+        
+        Args:
+            action_id: ID de l'action
+            status: Nouveau statut ('pending', 'in_progress', 'completed', 'failed', 'cancelled')
+            result_data: Données de résultat
+            error_message: Message d'erreur si échec
+            merge_commit_hash: Hash du commit de merge (si applicable)
+            merge_commit_url: URL du commit de merge (si applicable)
+            
+        Returns:
+            True si succès, False sinon
+        """
+        if not self.db_pool:
+            await self.init_db_pool()
+        
+        # Valider le statut
+        valid_statuses = ['pending', 'in_progress', 'completed', 'failed', 'cancelled']
+        if status not in valid_statuses:
+            logger.error(f"❌ Statut d'action invalide: {status}. Valides: {valid_statuses}")
+            return False
+        
+        try:
+            async with self.db_pool.acquire() as conn:
+                import json
+                
+                # Mettre à jour les timestamps selon le statut
+                update_query = """
+                    UPDATE validation_actions
+                    SET action_status = $2,
+                        result_data = $3,
+                        error_message = $4,
+                        merge_commit_hash = $5,
+                        merge_commit_url = $6,
+                """
+                
+                if status == 'in_progress':
+                    update_query += "started_at = NOW(),"
+                elif status in ['completed', 'failed', 'cancelled']:
+                    update_query += "completed_at = NOW(),"
+                
+                # Retirer la virgule finale et ajouter WHERE
+                update_query = update_query.rstrip(',') + " WHERE validation_actions_id = $1"
+                
+                await conn.execute(
+                    update_query,
+                    action_id,
+                    status,
+                    json.dumps(result_data) if result_data else None,
+                    error_message,
+                    merge_commit_hash,
+                    merge_commit_url
+                )
+                
+                logger.info(f"✅ Action {action_id} mise à jour: statut={status}")
+                return True
+                
+        except Exception as e:
+            logger.error(f"❌ Erreur mise à jour action {action_id}: {e}")
+            return False
+    
+    async def get_validation_actions(self, validation_id: str) -> List[Dict[str, Any]]:
+        """
+        Récupère toutes les actions associées à une validation.
+        
+        Args:
+            validation_id: ID de la validation
+            
+        Returns:
+            Liste des actions
+        """
+        if not self.db_pool:
+            await self.init_db_pool()
+        
+        try:
+            async with self.db_pool.acquire() as conn:
+                rows = await conn.fetch("""
+                    SELECT 
+                        validation_actions_id,
+                        action_type,
+                        action_status,
+                        action_data,
+                        result_data,
+                        merge_commit_hash,
+                        merge_commit_url,
+                        created_at,
+                        started_at,
+                        completed_at,
+                        error_message,
+                        retry_count
+                    FROM validation_actions
+                    WHERE validation_id = $1
+                    ORDER BY created_at DESC
+                """, validation_id)
+                
+                actions = []
+                for row in rows:
+                    actions.append({
+                        "action_id": row['validation_actions_id'],
+                        "action_type": row['action_type'],
+                        "status": row['action_status'],
+                        "action_data": row['action_data'],
+                        "result_data": row['result_data'],
+                        "merge_commit_hash": row['merge_commit_hash'],
+                        "merge_commit_url": row['merge_commit_url'],
+                        "created_at": row['created_at'].isoformat() if row['created_at'] else None,
+                        "started_at": row['started_at'].isoformat() if row['started_at'] else None,
+                        "completed_at": row['completed_at'].isoformat() if row['completed_at'] else None,
+                        "error_message": row['error_message'],
+                        "retry_count": row['retry_count']
+                    })
+                
+                return actions
+                
+        except Exception as e:
+            logger.error(f"❌ Erreur récupération actions pour {validation_id}: {e}")
+            return []
     
     async def wait_for_validation_response(self, validation_id: str, timeout_minutes: int = 10) -> Optional[HumanValidationResponse]:
         """

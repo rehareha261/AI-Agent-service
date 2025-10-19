@@ -1,4 +1,5 @@
-"""Modèles et schémas pour l'agent d'automatisation."""
+# -*- coding: utf-8 -*-
+"""Modeles et schemas pour l'agent d'automatisation."""
 
 from .schemas import (
     TaskRequest,

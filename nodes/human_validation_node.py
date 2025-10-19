@@ -59,10 +59,13 @@ async def human_validation_node(state: GraphState) -> GraphState:
             logger.warning("⚠️ Aucune information de PR trouvée pour la validation")
         
         # 4. Créer la demande de validation
+        # ✅ COHÉRENCE: task_id = Monday item ID (pour affichage UI)
+        display_task_id = str(state["task"].monday_item_id) if hasattr(state["task"], 'monday_item_id') and state["task"].monday_item_id else str(state["task"].task_id)
+        
         validation_request = HumanValidationRequest(
             validation_id=validation_id,
             workflow_id=state.get("workflow_id", "unknown"),
-            task_id=state["task"].task_id,
+            task_id=display_task_id,  # Monday item ID pour affichage UI
             task_title=state["task"].title,
             generated_code=generated_code,
             code_summary=code_summary,
@@ -76,9 +79,22 @@ async def human_validation_node(state: GraphState) -> GraphState:
         )
         
         # 5. Sauvegarder la demande en base de données
-        task_id = int(state["task"].task_id)
-        task_run_id = state["results"].get("task_run_id")
-        run_step_id = state["results"].get("run_step_id")
+        # ✅ CORRECTION: Utiliser db_task_id (ID base de données) au lieu de task.task_id (monday_item_id)
+        task_id = state.get("db_task_id")
+        task_run_id = state.get("db_run_id")
+        run_step_id = state.get("db_step_id")
+        
+        if not task_id:
+            logger.error("❌ db_task_id manquant dans l'état")
+            task_id = None
+        else:
+            task_id = int(task_id)
+        
+        # Convertir task_run_id et run_step_id en entiers si présents
+        if task_run_id:
+            task_run_id = int(task_run_id)
+        if run_step_id:
+            run_step_id = int(run_step_id)
         
         success = await validation_service.create_validation_request(
             validation_request, 
@@ -139,16 +155,16 @@ async def human_validation_node(state: GraphState) -> GraphState:
                 logger.info(f"✅ Code approuvé par l'humain: {validation_id}")
                 state["results"]["ai_messages"].append("✅ Code approuvé - Préparation du merge...")
                 state["results"]["should_merge"] = True
-                # ✅ CORRECTION: Ajouter human_decision pour cohérence avec la logique de routage
-                state["results"]["human_decision"] = "approve"
+                # ✅ CORRECTION: Utiliser "approved" (pas "approve") pour cohérence avec HumanValidationStatus.APPROVED.value
+                state["results"]["human_decision"] = "approved"
                 
             elif validation_response.status == HumanValidationStatus.REJECTED:
                 logger.info(f"❌ Code rejeté par l'humain: {validation_id}")
                 state["results"]["ai_messages"].append(f"❌ Code rejeté: {validation_response.comments}")
                 state["results"]["should_merge"] = False
                 state["results"]["rejection_reason"] = validation_response.comments
-                # ✅ CORRECTION: Ajouter human_decision pour cohérence
-                state["results"]["human_decision"] = "debug"
+                # ✅ CORRECTION: Utiliser "rejected" pour cohérence avec HumanValidationStatus.REJECTED.value
+                state["results"]["human_decision"] = "rejected"
                 
             else:
                 logger.warning(f"⚠️ Validation expirée ou annulée: {validation_id}")

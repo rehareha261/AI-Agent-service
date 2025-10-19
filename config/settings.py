@@ -16,7 +16,7 @@ class Settings(BaseSettings):
         "extra": "ignore"
     }
     
-    # API Keys - IA Providers
+    # API Keys - IA Providers (Anthropic principal, OpenAI fallback)
     anthropic_api_key: str = Field(..., env="ANTHROPIC_API_KEY")
     openai_api_key: Optional[str] = Field(default=None, env="OPENAI_API_KEY")
     
@@ -45,6 +45,7 @@ class Settings(BaseSettings):
     monday_board_id: str = Field(..., env="MONDAY_BOARD_ID")
     monday_task_column_id: str = Field(..., env="MONDAY_TASK_COLUMN_ID") 
     monday_status_column_id: str = Field(..., env="MONDAY_STATUS_COLUMN_ID")
+    monday_repository_url_column_id: Optional[str] = Field(default=None, env="MONDAY_REPOSITORY_URL_COLUMN_ID")
     
     # Database Configuration (Admin Backend)
     database_url: str = Field(default="postgresql://admin:password@localhost:5432/ai_agent_admin", env="DATABASE_URL")
@@ -55,7 +56,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = Field(default=30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
     
     # AI Engine Configuration
-    default_ai_provider: str = Field(default="openai", env="DEFAULT_AI_PROVIDER")
+    default_ai_provider: str = Field(default="anthropic", env="DEFAULT_AI_PROVIDER")
     ai_model_temperature: float = Field(default=0.1, env="AI_MODEL_TEMPERATURE")
     ai_max_tokens: int = Field(default=4000, env="AI_MAX_TOKENS")
     
@@ -83,6 +84,42 @@ class Settings(BaseSettings):
     def celery_result_backend(self) -> str:
         """Backend des résultats Celery utilisant PostgreSQL."""
         return f"db+{self.database_url}"
+    
+    # Database component properties (extracted from database_url)
+    @property
+    def db_host(self) -> str:
+        """Extrait le host de database_url."""
+        import re
+        match = re.search(r'@([^@:]+):\d+/', self.database_url)
+        return match.group(1) if match else "localhost"
+    
+    @property
+    def db_port(self) -> int:
+        """Extrait le port de database_url."""
+        import re
+        match = re.search(r':(\d+)/', self.database_url)
+        return int(match.group(1)) if match else 5432
+    
+    @property
+    def db_name(self) -> str:
+        """Extrait le nom de DB de database_url."""
+        import re
+        match = re.search(r':\d+/([^?]+)', self.database_url)
+        return match.group(1) if match else "ai_agent_admin"
+    
+    @property
+    def db_user(self) -> str:
+        """Extrait le user de database_url."""
+        import re
+        match = re.search(r'://([^:]+):', self.database_url)
+        return match.group(1) if match else "admin"
+    
+    @property
+    def db_password(self) -> str:
+        """Extrait le password de database_url."""
+        import re
+        match = re.search(r'://[^:]+:(.+)@[^@]+:\d+/', self.database_url)
+        return match.group(1) if match else "password"
     
     # Application Configuration
     debug: bool = Field(default=False, env="DEBUG")

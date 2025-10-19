@@ -1,0 +1,297 @@
+================================================================================
+CORRECTIONS - MISE À JOUR STATUT MONDAY.COM "DONE" APRÈS MERGE
+================================================================================
+Date: 5 octobre 2025
+Problème: Le statut "Done" n'est pas toujours mis à jour dans Monday.com après 
+          un merge réussi de la Pull Request.
+
+================================================================================
+ÉTAPE 1 : CORRIGER LA PRIORITÉ DU STATUT
+================================================================================
+Fichier: nodes/update_node.py
+Fonction: _determine_final_status()
+Ligne: ~205
+
+Action:
+1. Déplacer la vérification de "merge_successful" EN PREMIER (avant tout)
+2. Forcer le retour de ("Done", "success") si merge_successful=True
+3. Supprimer la vérification redondante de merge_successful plus bas
+
+Code à modifier:
+```python
+def _determine_final_status(state: GraphState) -> tuple[str, str]:
+    # AJOUT EN PREMIER (avant toute autre vérification)
+    if state["results"] and state["results"].get("merge_successful", False):
+        logger.info("🎉 Merge réussi détecté - Statut forcé à 'Done'")
+        return "Done", "success"
+    
+    # Vérifier si un statut explicite a été défini
+    if state["results"] and "monday_final_status" in state["results"]:
+        explicit_status = state["results"]["monday_final_status"]
+        logger.info(f"📌 Utilisation du statut explicite: {explicit_status}")
+        
+        if explicit_status == "Done":
+            return "Done", "success"
+        # ... reste du code ...
+```
+
+================================================================================
+ÉTAPE 2 : GARANTIR LA PERSISTANCE APRÈS MERGE
+================================================================================
+Fichier: nodes/merge_node.py
+Fonction: merge_after_validation()
+Ligne: ~175
+
+Action:
+1. Ajouter "workflow_success": True
+2. Définir explicitement state["status"] = WorkflowStatus.COMPLETED
+3. Ajouter log de debug pour traçabilité
+
+Code à ajouter dans le bloc "if merge_result.get("success", False)":
+```python
+# APRÈS les lignes existantes:
+state["results"]["merge_successful"] = True
+state["results"]["merge_commit"] = merge_commit
+state["results"]["monday_final_status"] = "Done"
+
+# AJOUTER CES LIGNES:
+state["results"]["workflow_success"] = True
+state["status"] = WorkflowStatus.COMPLETED
+
+# Log pour debug
+logger.info(f"📊 État après merge - merge_successful={state['results']['merge_successful']}, final_status={state['results']['monday_final_status']}")
+```
+
+================================================================================
+ÉTAPE 3 : VÉRIFIER LE MAPPING DES STATUTS
+================================================================================
+Fichier: tools/monday_tool.py
+Classe: MondayTool
+Variable: STATUS_MAPPING
+
+Action:
+Vérifier que ces mappings existent (ajouter si manquants):
+
+```python
+STATUS_MAPPING = {
+    # ... mappings existants ...
+    "done": "Done",
+    "Done": "Done",  # Mapping identité important
+    "completed": "Done",
+}
+```
+
+================================================================================
+ÉTAPE 4 : AJOUTER VALIDATION CRITIQUE
+================================================================================
+Fichier: nodes/update_node.py
+Fonction: update_monday()
+Ligne: ~95 (après _determine_final_status)
+
+Action:
+Ajouter une vérification de cohérence avec correction automatique
+
+Code à insérer:
+```python
+# APRÈS cette ligne:
+final_status, success_level = _determine_final_status(state)
+
+# AJOUTER CE BLOC:
+# Validation critique: vérifier cohérence
+if state["results"].get("merge_successful", False) and final_status != "Done":
+    logger.error(f"❌ INCOHÉRENCE: merge_successful=True mais final_status='{final_status}'")
+    logger.warning("🔧 Correction automatique - Forçage à 'Done'")
+    final_status = "Done"
+    success_level = "success"
+    state["results"]["status_corrected"] = True
+```
+
+================================================================================
+ÉTAPE 5 : ENRICHIR LE COMMENTAIRE MONDAY
+================================================================================
+Fichier: nodes/update_node.py
+Fonction: update_monday()
+Ligne: ~105 (après génération du commentaire)
+
+Action:
+Ajouter info de merge dans le commentaire Monday.com
+
+Code à insérer:
+```python
+# APRÈS:
+completion_comment = await _generate_completion_comment(state, success_level)
+
+# AJOUTER:
+if state["results"].get("merge_successful", False):
+    merge_info = f"\n\n✅ **Pull Request mergée avec succès**\n"
+    if state["results"].get("merge_commit"):
+        merge_info += f"- **Commit de merge**: `{state['results']['merge_commit']}`\n"
+    if state["results"].get("merge_commit_url"):
+        merge_info += f"- **Lien**: {state['results']['merge_commit_url']}\n"
+    completion_comment += merge_info
+```
+
+================================================================================
+ÉTAPE 6 : AJOUTER VÉRIFICATION POST-UPDATE
+================================================================================
+Fichier: nodes/update_node.py
+Fonction: update_monday()
+Ligne: ~140 (dans le bloc if update_result.get("success"))
+
+Action:
+Vérifier que le statut "Done" a bien été appliqué
+
+Code à ajouter:
+```python
+if update_result.get("success", False):
+    logger.info("✅ Monday.com mis à jour avec succès")
+    
+    # AJOUTER CE BLOC:
+    if state["results"].get("merge_successful", False):
+        if final_status != "Done":
+            logger.error(f"❌ ERREUR: Merge réussi mais statut='{final_status}'")
+            state["results"]["ai_messages"].append(
+                f"⚠️ Avertissement: Statut Monday='{final_status}' (attendu 'Done')"
+            )
+        else:
+            logger.info("✅ Vérification: Statut 'Done' correctement appliqué")
+            state["results"]["ai_messages"].append(
+                "✅ Statut Monday.com mis à jour : Done"
+            )
+```
+
+================================================================================
+ÉTAPE 7 : CRÉER TEST DE RÉGRESSION
+================================================================================
+Fichier: tests/test_monday_status_after_merge.py (NOUVEAU)
+
+Action:
+Créer un nouveau fichier de test
+
+Code complet:
+```python
+"""Test de régression pour statut Monday après merge."""
+import pytest
+from models.state import GraphState
+from models.schemas import TaskRequest, WorkflowStatus
+from nodes.update_node import _determine_final_status
+
+@pytest.mark.asyncio
+async def test_status_done_after_successful_merge():
+    """Vérifie que le statut est 'Done' après merge réussi."""
+    state = GraphState(
+        task=TaskRequest(
+            task_id="test_merge_123",
+            title="Test merge status",
+            task_type="feature",
+            priority="normal"
+        ),
+        status=WorkflowStatus.COMPLETED,
+        results={
+            "merge_successful": True,
+            "merge_commit": "abc123",
+            "monday_final_status": "Done"
+        }
+    )
+    
+    final_status, success_level = _determine_final_status(state)
+    
+    assert final_status == "Done", f"Attendu 'Done', reçu '{final_status}'"
+    assert success_level == "success"
+    print("✅ Test réussi: Statut 'Done' après merge")
+
+@pytest.mark.asyncio
+async def test_merge_priority_over_explicit_status():
+    """Vérifie que merge_successful a priorité absolue."""
+    state = GraphState(
+        task=TaskRequest(
+            task_id="test_priority_456",
+            title="Test priority",
+            task_type="feature",
+            priority="normal"
+        ),
+        status=WorkflowStatus.COMPLETED,
+        results={
+            "merge_successful": True,
+            "monday_final_status": "Working on it"  # Conflit intentionnel
+        }
+    )
+    
+    final_status, _ = _determine_final_status(state)
+    
+    assert final_status == "Done", "merge_successful doit avoir priorité"
+    print("✅ Test réussi: Priorité de merge_successful")
+```
+
+================================================================================
+ÉTAPE 8 : TESTER LES CORRECTIONS
+================================================================================
+
+1. Lancer le test de régression:
+   ```bash
+   pytest tests/test_monday_status_after_merge.py -v
+   ```
+
+2. Vérifier les logs lors d'un merge réel:
+   - Chercher: "🎉 Merge réussi détecté - Statut forcé à 'Done'"
+   - Chercher: "✅ Vérification: Statut 'Done' correctement appliqué"
+
+3. Vérifier dans Monday.com que le statut est bien "Done"
+
+================================================================================
+ÉTAPE 9 : CHECKLIST DE VALIDATION
+================================================================================
+
+Avant de considérer la correction terminée, vérifier:
+
+□ merge_successful=True → Statut forcé à "Done" (prioritaire)
+□ Log "Merge réussi détecté - Statut forcé à 'Done'" présent
+□ Commentaire Monday enrichi avec infos de merge
+□ Vérification post-update dans les logs
+□ Tests de régression passent (2/2)
+□ Aucune incohérence entre merge_successful et final_status
+□ Statut "Done" visible dans Monday.com après merge
+
+================================================================================
+ORDRE D'APPLICATION DES CORRECTIONS
+================================================================================
+
+1. ÉTAPE 1 (update_node.py - priorité) ← CRITIQUE
+2. ÉTAPE 2 (merge_node.py - persistance)
+3. ÉTAPE 4 (update_node.py - validation) ← CRITIQUE
+4. ÉTAPE 3 (monday_tool.py - mapping)
+5. ÉTAPE 5 (update_node.py - commentaire)
+6. ÉTAPE 6 (update_node.py - vérification)
+7. ÉTAPE 7 (créer fichier de test)
+8. ÉTAPE 8 (tester)
+9. ÉTAPE 9 (valider)
+
+================================================================================
+NOTES IMPORTANTES
+================================================================================
+
+• Les ÉTAPES 1 et 4 sont CRITIQUES - à faire en priorité
+• Tester après chaque étape critique
+• Backup des fichiers avant modification
+• Vérifier les imports en haut des fichiers (logger, WorkflowStatus, etc.)
+• Relancer Celery après modifications pour appliquer les changements
+
+================================================================================
+COMMANDES UTILES
+================================================================================
+
+# Redémarrer Celery après modifications
+./restart_celery_clean.py
+
+# Tester les corrections
+pytest tests/test_monday_status_after_merge.py -v -s
+
+# Vérifier les logs en temps réel
+tail -f logs/workflow.log | grep -E "(merge|Done|monday)"
+
+# Chercher les incohérences dans les logs existants
+grep -E "merge_successful.*True" logs/*.log | grep -v "Done"
+
+================================================================================
+FIN DU DOCUMENT
+================================================================================

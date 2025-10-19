@@ -61,7 +61,14 @@ async def openai_debug_after_human_request(state: GraphState) -> GraphState:
         
         # 1. Récupérer la demande de debug humaine
         debug_request = state["results"].get("debug_request", "Problème à corriger")
-        human_comments = state["results"].get("validation_response", {}).get("comments", "")
+        
+        # ✅ CORRECTION: validation_response est un objet Pydantic, pas un dict
+        validation_response = state["results"].get("validation_response")
+        if validation_response:
+            # Accéder directement à l'attribut de l'objet Pydantic
+            human_comments = getattr(validation_response, 'comments', '') or ''
+        else:
+            human_comments = ""
         
         logger.info(f"📝 Demande debug humaine: {debug_request}")
         
@@ -238,18 +245,48 @@ Sois précis et actionnable dans tes recommandations.
     return prompt.strip()
 
 
-def _format_test_results(test_results: Dict[str, Any]) -> str:
-    """Formate les résultats de tests pour le prompt."""
+def _format_test_results(test_results: Any) -> str:
+    """
+    Formate les résultats de tests pour le prompt.
+    
+    ✅ CORRECTION ERREUR 3: Gère test_results comme liste ou dict
+    """
     if not test_results:
         return "Aucun résultat de test disponible"
     
-    if test_results.get("success"):
+    # ✅ CORRECTION: Normaliser test_results en dict si c'est une liste
+    if isinstance(test_results, list):
+        # Convertir liste en dict structuré
+        test_results_dict = {
+            "tests": test_results,
+            "count": len(test_results),
+            "success": all(
+                t.get("success", False) if isinstance(t, dict) else False 
+                for t in test_results
+            )
+        }
+    elif isinstance(test_results, dict):
+        test_results_dict = test_results
+    else:
+        # Type inattendu, traiter comme échec
+        return f"⚠️ Résultats de tests dans un format inattendu: {type(test_results)}"
+    
+    # Maintenant on peut utiliser .get() en toute sécurité
+    if test_results_dict.get("success"):
         return "✅ Tests réussis"
     else:
-        failed_tests = test_results.get("failed_tests", [])
+        failed_tests = test_results_dict.get("failed_tests", [])
         if failed_tests:
             return f"❌ {len(failed_tests)} test(s) échoué(s):\n" + "\n".join([f"- {test}" for test in failed_tests[:5]])
         else:
+            # Essayer de compter les tests échoués depuis la liste
+            if "tests" in test_results_dict:
+                failed_count = sum(
+                    1 for t in test_results_dict["tests"] 
+                    if isinstance(t, dict) and not t.get("success", False)
+                )
+                if failed_count > 0:
+                    return f"❌ {failed_count} test(s) échoué(s)"
             return "❌ Tests échoués (détails non disponibles)"
 
 

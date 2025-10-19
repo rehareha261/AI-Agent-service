@@ -204,6 +204,9 @@ def enrich_task_with_description_info(task_data: Dict[str, Any], description: st
     """
     enriched = task_data.copy()
     
+    # ✅ CORRECTION CRITIQUE: Conserver la description dans les données enrichies
+    enriched["description"] = description
+    
     # URL GitHub - PRIORITÉ ABSOLUE À LA DESCRIPTION
     github_url = extract_github_url_from_description(description)
     if github_url:

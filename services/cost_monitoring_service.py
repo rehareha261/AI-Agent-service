@@ -1,6 +1,6 @@
 """Service de monitoring des coûts IA avec tracking détaillé."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
 from enum import Enum
@@ -135,7 +135,7 @@ class CostMonitoringService:
                 output_tokens=output_tokens,
                 total_tokens=total_tokens,
                 estimated_cost=estimated_cost,
-                timestamp=datetime.now(),
+                timestamp=datetime.now(timezone.utc),
                 success=success
             )
             
@@ -203,7 +203,7 @@ class CostMonitoringService:
         """Statistiques de coût pour une journée."""
         
         if date is None:
-            date = datetime.now()
+            date = datetime.now(timezone.utc)
         
         date_str = date.strftime("%Y-%m-%d")
         

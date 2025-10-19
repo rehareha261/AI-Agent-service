@@ -53,7 +53,7 @@ async def merge_after_validation(state: GraphState) -> GraphState:
         if validation_status != HumanValidationStatus.APPROVED.value:
             validation_errors.append(f"Statut validation incorrect: {validation_status}")
         
-        if human_decision not in ["approve"]:
+        if human_decision not in ["approved"]:
             validation_errors.append(f"Décision humaine incorrecte: {human_decision}")
         
         # Vérifier qu'il y a eu une vraie validation humaine
@@ -104,6 +104,19 @@ async def merge_after_validation(state: GraphState) -> GraphState:
             if extracted_url:
                 repo_url = extracted_url
                 logger.info(f"✅ URL GitHub extraite de la description: {repo_url}")
+        
+        # ✅ CORRECTION: Nettoyer l'URL du repository si elle provient de Monday.com
+        if repo_url and isinstance(repo_url, str):
+            import re
+            # Format Monday.com: "GitHub - user/repo - https://github.com/user/repo"
+            https_match = re.search(r'(https://github\.com/[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+(?:\.git)?)', repo_url)
+            if https_match:
+                cleaned_url = https_match.group(1)
+                if cleaned_url.endswith('.git'):
+                    cleaned_url = cleaned_url[:-4]
+                if cleaned_url != repo_url:
+                    logger.info(f"🧹 URL repository nettoyée pour merge: '{repo_url[:50]}...' → '{cleaned_url}'")
+                    repo_url = cleaned_url
         
         # ✅ VALIDATION FINALE
         if not repo_url:
@@ -179,6 +192,19 @@ async def merge_after_validation(state: GraphState) -> GraphState:
             state["results"]["merge_commit"] = merge_commit
             state["results"]["ai_messages"].append(f"✅ Merge réussi: {merge_commit}")
             
+            # ✅ NOUVEAU: Marquer que le statut Monday.com doit être "Done" après le merge
+            state["results"]["monday_final_status"] = "Done"
+            state["results"]["workflow_success"] = True
+            
+            # ✅ CORRECTION: Définir explicitement le statut du workflow
+            from models.schemas import WorkflowStatus
+            state["status"] = WorkflowStatus.COMPLETED
+            
+            state["results"]["ai_messages"].append("🎉 Tâche prête à être marquée comme Done dans Monday.com")
+            
+            # Log pour debug
+            logger.info(f"📊 État après merge - merge_successful={state['results']['merge_successful']}, final_status={state['results']['monday_final_status']}")
+            
             # Ajouter l'URL du commit mergé
             if merge_commit:
                 commit_url = f"{repo_url.rstrip('/')}/commit/{merge_commit}"
@@ -197,14 +223,14 @@ async def merge_after_validation(state: GraphState) -> GraphState:
                 cleanup_result = await github_tool._arun(
                     action="delete_branch",
                     repo_url=repo_url,
-                    branch=task.git_branch or task.branch_name
+                    branch=task.branch_name
                 )
                 
                 if cleanup_result.get("success", False):
-                    logger.info(f"🧹 Branche supprimée: {task.git_branch}")
+                    logger.info(f"🧹 Branche supprimée: {task.branch_name}")
                     state["results"]["ai_messages"].append("🧹 Branche de travail supprimée")
                 else:
-                    logger.warning(f"⚠️ Impossible de supprimer la branche: {task.git_branch}")
+                    logger.warning(f"⚠️ Impossible de supprimer la branche: {task.branch_name}")
                     
             except Exception as e:
                 logger.warning(f"⚠️ Erreur lors du nettoyage de branche: {e}")

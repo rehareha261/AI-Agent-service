@@ -1,11 +1,8 @@
 """Outils LangChain pour l'agent d'automatisation."""
 
-from .base_tool import BaseTool
-from .claude_code_tool import ClaudeCodeTool
-from .github_tool import GitHubTool
-from .monday_tool import MondayTool
-from .ai_engine_hub import AIEngineHub, ai_hub, AIRequest, TaskType
-from .testing_engine import TestingEngine
+# ✅ CORRECTION: Imports supprimés pour éviter l'import circulaire
+# Les modules peuvent importer directement: from tools.monday_tool import MondayTool
+# Au lieu de: from tools import MondayTool
 
 __all__ = [
     "BaseTool",

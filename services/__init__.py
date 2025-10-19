@@ -1,16 +1,8 @@
 """Services de l'application."""
 
-from .webhook_service import WebhookService
-from .celery_app import celery_app, submit_task
-from .database_persistence_service import db_persistence, DatabasePersistenceService
-from .monitoring_service import monitoring_service, monitoring_dashboard, MonitoringDashboard
-from .cost_monitoring_service import cost_monitor, CostMonitoringService
-from .monday_validation_service import monday_validation_service, MondayValidationService
-from .human_validation_service import validation_service, HumanValidationService
-from .pull_request_service import pr_service, PullRequestService
-from .logging_service import logging_service, CeleryLoggingService
-from .intelligent_reply_analyzer import intelligent_reply_analyzer, IntentionType
-from .webhook_persistence_service import webhook_persistence
+# ✅ CORRECTION: Imports supprimés pour éviter l'import circulaire
+# Les modules peuvent importer directement: from services.webhook_service import WebhookService
+# Au lieu de: from services import WebhookService
 
 __all__ = [
     "WebhookService", 

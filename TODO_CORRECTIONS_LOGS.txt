@@ -1,0 +1,465 @@
+================================================================================
+TODO - CORRECTIONS DES ERREURS DANS LES LOGS CELERY
+================================================================================
+Date: 6 octobre 2025
+Analyse: Logs du workflow "Ajouter un fichier main" (ID: 5028526668)
+Statut: Workflow fonctionne mais 3 erreurs critiques détectées
+
+================================================================================
+📊 RÉSUMÉ RAPIDE
+================================================================================
+
+✅ POINTS POSITIFS:
+   - Workflow complet fonctionnel (85 secondes)
+   - Code généré (main.txt)
+   - PR #11 créée avec succès
+   - Validation humaine Monday.com détectée ("non" → debug demandé)
+   - Statut Monday mis à jour ("Working on it")
+
+🔴 ERREURS CRITIQUES (3):
+   1. Erreur création validation en DB (generated_code format invalide)
+   2. Erreur sauvegarde réponse validation en DB (validation non trouvée)
+   3. Erreur debug OpenAI ('list' object has no attribute 'get')
+
+⚠️ WARNINGS NON-CRITIQUES:
+   - Pydantic serialization warnings (int → str)
+   - Colonnes Monday.com non identifiées
+
+================================================================================
+ERREUR 1/3 - CRITIQUE - CRÉATION VALIDATION EN DB
+================================================================================
+
+Log de l'erreur:
+[12:08:44] ❌ Erreur création validation val_5028526668_1759741724: 
+           invalid input for query argument $9: 
+           {'main.txt': "# Projet GenericDAO - Résu... 
+           (expected str, got dict)
+
+Problème:
+- Le champ 'generated_code' dans la table validations attend un STRING (JSON)
+- Mais le code Python envoie un DICT directement
+- PostgreSQL rejette l'insertion
+
+Fichier concerné: nodes/monday_validation_node.py
+Ligne: ~86-105
+
+Solution:
+Convertir le dictionnaire generated_code en JSON string avant insertion
+
+--- CODE À MODIFIER ---
+
+Chercher dans nodes/monday_validation_node.py:
+
+            # Créer la demande de validation
+            validation_request = HumanValidationRequest(
+                validation_id=validation_id,
+                workflow_id=state.get("workflow_id", ""),
+                task_id=str(state["task"].task_id),
+                task_title=state["task"].title,
+                generated_code=generated_code if generated_code else {"summary": "Code généré - voir fichiers modifiés"},
+                code_summary=f"Implémentation de: {state['task'].title}",
+
+Remplacer par:
+
+            import json
+            
+            # Convertir generated_code en JSON string pour la DB
+            generated_code_str = json.dumps(
+                generated_code if generated_code else {"summary": "Code généré - voir fichiers modifiés"},
+                ensure_ascii=False,
+                indent=2
+            )
+            
+            # Créer la demande de validation
+            validation_request = HumanValidationRequest(
+                validation_id=validation_id,
+                workflow_id=state.get("workflow_id", ""),
+                task_id=str(state["task"].task_id),
+                task_title=state["task"].title,
+                generated_code=generated_code_str,  # ← STRING au lieu de DICT
+                code_summary=f"Implémentation de: {state['task'].title}",
+
+--- ALTERNATIVE SI LE MODÈLE ATTEND UN DICT ---
+
+Si HumanValidationRequest attend un Dict mais que la DB attend un string,
+modifier le modèle Pydantic dans models/schemas.py:
+
+Chercher dans models/schemas.py:
+
+    class HumanValidationRequest(BaseModel):
+        # ...
+        generated_code: Dict[str, str] = Field(..., description="Code généré par fichier")
+
+Ajouter un validateur:
+
+    @field_validator('generated_code', mode='before')
+    @classmethod
+    def convert_generated_code_to_dict(cls, v):
+        """Assure que generated_code est un dict."""
+        if isinstance(v, str):
+            import json
+            return json.loads(v)
+        return v
+
+ET modifier la requête SQL d'insertion pour convertir le dict en JSON:
+
+Dans services/human_validation_service.py, chercher l'INSERT INTO et ajouter:
+
+    json.dumps(validation.generated_code) au lieu de validation.generated_code
+
+================================================================================
+ERREUR 2/3 - CRITIQUE - SAUVEGARDE RÉPONSE VALIDATION
+================================================================================
+
+Log de l'erreur:
+[12:09:17] ❌ Validation 467847794 non trouvée
+[12:09:17] ⚠️ Échec sauvegarde réponse validation en DB
+
+Problème:
+- La validation n'a pas été sauvegardée en DB (à cause de ERREUR 1)
+- Donc impossible de sauvegarder la réponse humaine
+- Chaîne de dépendances cassée
+
+Fichier concerné: services/monday_validation_service.py ou nodes/monday_validation_node.py
+
+Solution:
+Cette erreur sera automatiquement résolue quand ERREUR 1 sera corrigée.
+Mais ajouter une gestion plus robuste:
+
+--- CODE À AJOUTER ---
+
+Dans la fonction qui sauvegarde la réponse de validation:
+
+    try:
+        # Chercher la validation en DB
+        validation = await get_validation_by_id(validation_id)
+        
+        if not validation:
+            logger.warning(f"⚠️ Validation {validation_id} non trouvée - création d'un enregistrement de secours")
+            
+            # Créer une validation de secours avec infos minimales
+            validation = await create_fallback_validation(
+                validation_id=validation_id,
+                task_id=task_id,
+                status="pending"
+            )
+        
+        # Sauvegarder la réponse
+        await save_validation_response(validation.id, response)
+        
+    except Exception as e:
+        logger.error(f"❌ Erreur sauvegarde réponse: {e}")
+        # Ne pas bloquer le workflow
+        pass
+
+================================================================================
+ERREUR 3/3 - CRITIQUE - DEBUG OPENAI
+================================================================================
+
+Log de l'erreur:
+[12:09:18] ❌ Erreur debug OpenAI: 'list' object has no attribute 'get'
+
+Problème:
+- Le nœud debug_openai reçoit test_results comme une LIST
+- Mais le code essaie d'appeler .get() dessus (méthode de dict)
+- Python lève AttributeError
+
+Fichier concerné: nodes/openai_debug_node.py
+Ligne: ~50-100 (où test_results.get() est appelé)
+
+Solution:
+Vérifier le type de test_results avant d'appeler .get()
+
+--- CODE À MODIFIER ---
+
+Chercher dans nodes/openai_debug_node.py toutes les occurrences de:
+
+    test_results.get(...)
+
+Remplacer par:
+
+    # Normaliser test_results en dict
+    if isinstance(test_results, list):
+        test_results_dict = {
+            "tests": test_results,
+            "count": len(test_results),
+            "all_passed": all(
+                test.get("success", False) if isinstance(test, dict) else False 
+                for test in test_results
+            )
+        }
+    elif isinstance(test_results, dict):
+        test_results_dict = test_results
+    else:
+        test_results_dict = {"raw": str(test_results)}
+    
+    # Maintenant utiliser test_results_dict.get(...)
+    tests_passed = test_results_dict.get("all_passed", False)
+
+--- ALTERNATIVE: FONCTION HELPER ---
+
+Ajouter au début du fichier nodes/openai_debug_node.py:
+
+def _normalize_test_results(test_results) -> Dict[str, Any]:
+    """
+    Normalise test_results en dictionnaire pour éviter AttributeError.
+    
+    Args:
+        test_results: Peut être list, dict, ou autre
+        
+    Returns:
+        Dict structuré
+    """
+    if not test_results:
+        return {"tests": [], "count": 0, "all_passed": True}
+    
+    if isinstance(test_results, dict):
+        return test_results
+    
+    if isinstance(test_results, list):
+        return {
+            "tests": test_results,
+            "count": len(test_results),
+            "all_passed": all(
+                t.get("success", False) if isinstance(t, dict) else False 
+                for t in test_results
+            )
+        }
+    
+    return {"raw": str(test_results), "type": str(type(test_results))}
+
+Puis dans la fonction debug_openai:
+
+    test_results = _normalize_test_results(state["results"].get("test_results"))
+    # Maintenant utiliser test_results.get(...) en toute sécurité
+
+================================================================================
+CORRECTION BONUS - PYDANTIC WARNINGS
+================================================================================
+
+Log du warning (répété ~10 fois):
+UserWarning: Pydantic serializer warnings:
+Expected `str` but got `int` - serialized value may not be as expected
+
+Problème:
+- Des champs définis comme str reçoivent des int
+- Probablement task_id, run_id, step_id, etc.
+
+Solution RAPIDE:
+Ajouter des validateurs dans models/schemas.py
+
+Dans la classe GraphState ou TaskRequest:
+
+    @field_validator('task_id', 'run_id', 'step_id', mode='before')
+    @classmethod
+    def convert_ids_to_str(cls, v):
+        """Convertit les IDs en string."""
+        if v is None:
+            return v
+        return str(v)
+
+OU changer les types pour accepter les deux:
+
+    task_id: Union[str, int] = Field(..., description="ID de la tâche")
+    run_id: Optional[Union[str, int]] = Field(None, description="ID du run")
+
+================================================================================
+ORDRE D'APPLICATION DES CORRECTIONS
+================================================================================
+
+PRIORITÉ 1 (CRITIQUE):
+□ ERREUR 1: Corriger generated_code (nodes/monday_validation_node.py)
+  → Permet de sauvegarder les validations en DB
+
+PRIORITÉ 2 (CRITIQUE):
+□ ERREUR 3: Corriger debug OpenAI (nodes/openai_debug_node.py)
+  → Permet au debug de fonctionner quand l'humain rejette
+
+PRIORITÉ 3 (AUTO-RÉSOLU):
+□ ERREUR 2: Sera résolu automatiquement après ERREUR 1
+
+PRIORITÉ 4 (OPTIONNEL):
+□ Warnings Pydantic (models/schemas.py)
+  → Nettoie les logs mais non-bloquant
+
+================================================================================
+FICHIERS À MODIFIER
+================================================================================
+
+1. nodes/monday_validation_node.py
+   Action: Convertir generated_code en JSON string
+   Ligne: ~95
+   Temps: 5 minutes
+
+2. nodes/openai_debug_node.py
+   Action: Normaliser test_results avant .get()
+   Ligne: ~50-100 (chercher test_results.get)
+   Temps: 10 minutes
+
+3. models/schemas.py (optionnel)
+   Action: Ajouter validateurs pour IDs
+   Ligne: Dans HumanValidationRequest et GraphState
+   Temps: 5 minutes
+
+================================================================================
+COMMANDES APRÈS MODIFICATIONS
+================================================================================
+
+1. Vérifier les modifications:
+   git diff nodes/monday_validation_node.py
+   git diff nodes/openai_debug_node.py
+
+2. Créer des backups:
+   cp nodes/monday_validation_node.py nodes/monday_validation_node.py.backup
+   cp nodes/openai_debug_node.py nodes/openai_debug_node.py.backup
+
+3. Redémarrer Celery:
+   pkill -f "celery.*worker"
+   celery -A services.celery_app worker --loglevel=info
+
+4. Tester avec un workflow:
+   - Créer tâche dans Monday.com
+   - Répondre "oui" pour merger
+   - OU "non" pour tester le debug
+
+5. Vérifier les logs:
+   tail -f logs/workflow.log | grep -E "(❌|✅|Erreur)"
+
+6. Vérifier la DB:
+   psql postgresql://admin:password@localhost:5432/ai_agent_admin
+   
+   SELECT validation_id, task_id, status 
+   FROM human_validations 
+   ORDER BY created_at DESC 
+   LIMIT 5;
+   
+   SELECT * 
+   FROM human_validation_responses 
+   ORDER BY created_at DESC 
+   LIMIT 5;
+
+================================================================================
+CHECKLIST DE VALIDATION
+================================================================================
+
+Après avoir appliqué toutes les corrections:
+
+□ ERREUR 1 disparue:
+  Logs contiennent: "✅ Validation humaine enregistrée en DB avec succès"
+  Au lieu de: "❌ Erreur création validation"
+
+□ ERREUR 2 disparue:
+  Logs contiennent: "✅ Réponse de validation sauvegardée en DB"
+  Au lieu de: "❌ Validation non trouvée"
+
+□ ERREUR 3 disparue:
+  Debug fonctionne quand humain rejette
+  Logs contiennent: "✅ Analyse debug terminée"
+  Au lieu de: "❌ Erreur debug OpenAI: 'list' object"
+
+□ Warnings Pydantic réduits (si correction appliquée)
+
+□ Workflow complet fonctionne:
+  - Validation "oui" → merge
+  - Validation "non" → debug puis update Monday
+
+□ DB contient les validations:
+  Tables human_validations et human_validation_responses peuplées
+
+================================================================================
+TESTS DE NON-RÉGRESSION
+================================================================================
+
+Après corrections, tester ces scénarios:
+
+Test 1: Validation "OUI"
+- Créer tâche Monday
+- Répondre "oui"
+- Vérifier merge réussi
+- Vérifier statut "Done"
+- Vérifier validation en DB
+
+Test 2: Validation "NON"
+- Créer tâche Monday
+- Répondre "non"
+- Vérifier debug lancé
+- Vérifier statut "Working on it"
+- Vérifier validation rejetée en DB
+
+Test 3: Timeout validation
+- Créer tâche Monday
+- Ne pas répondre pendant 10 min
+- Vérifier timeout
+- Vérifier statut "Stuck"
+
+================================================================================
+TEMPS ESTIMÉ
+================================================================================
+
+Correction ERREUR 1: 10 minutes
+Correction ERREUR 3: 15 minutes
+Tests et vérifications: 15 minutes
+---------------------------------
+TOTAL: 40 minutes
+
+================================================================================
+RÉSUMÉ EXÉCUTIF
+================================================================================
+
+📊 État actuel:
+- Workflow fonctionne de bout en bout ✅
+- PR créée, validation humaine détectée ✅
+- 3 erreurs de persistance/debug ❌
+
+🎯 Objectif:
+- Sauvegarder validations en DB
+- Permettre debug après rejet
+- Nettoyer les logs
+
+🚀 Actions:
+1. Convertir generated_code en JSON string (5 min)
+2. Normaliser test_results dans debug (15 min)
+3. Tester workflow complet (20 min)
+
+✅ Résultat attendu:
+- Validations persistées en DB
+- Debug fonctionnel après rejet
+- Workflow 100% opérationnel
+
+================================================================================
+NOTES IMPORTANTES
+================================================================================
+
+• Ces corrections sont CRITIQUES pour la traçabilité
+• Sans elles, les validations humaines ne sont pas sauvegardées
+• Le debug après rejet ne fonctionne pas
+• Mais le workflow continue de fonctionner (failover en place)
+
+• La correction de ERREUR 1 est la plus importante
+• Elle débloque automatiquement ERREUR 2
+• ERREUR 3 est indépendante (debug)
+
+• Pas de risque de régression: corrections isolées
+• Backups automatiques recommandés
+• Tests nécessaires après chaque correction
+
+================================================================================
+AIDE ET SUPPORT
+================================================================================
+
+Si une correction échoue:
+
+1. Vérifier les imports en haut du fichier (json, typing, etc.)
+2. Vérifier les numéros de ligne (peuvent varier)
+3. Chercher les patterns exacts fournis
+4. Consulter les logs pour identifier l'erreur exacte
+5. Restaurer le backup si nécessaire
+
+Fichiers de référence:
+- TOUS_LES_CHANGEMENTS.txt (corrections base de données)
+- CORRECTIONS_URGENTES_CELERY.md (analyse technique)
+- TODO_CORRECTIONS_LOGS.txt (ce fichier)
+
+================================================================================
+FIN DU TODO
+================================================================================

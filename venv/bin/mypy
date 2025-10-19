@@ -1,4 +1,4 @@
-#!/Users/stagiaire_vycode/Stage/AI-Agent/venv/bin/python3.12
+#!/Users/rehareharanaivo/Desktop/AI-Agent/venv/bin/python3.12
 import sys
 from mypy.__main__ import console_entry
 if __name__ == '__main__':

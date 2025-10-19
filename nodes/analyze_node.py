@@ -1,12 +1,90 @@
 """Nœud d'analyse des requirements - analyse les spécifications et génère un plan."""
 
-from typing import Dict, Any
+from typing import Dict, Any, Tuple
 from models.state import GraphState
 from tools.ai_engine_hub import ai_hub, AIRequest, TaskType
 from utils.logger import get_logger
 from utils.persistence_decorator import with_persistence
 
 logger = get_logger(__name__)
+
+# Flag pour activer/désactiver la nouvelle chaîne LangChain (Phase 2)
+USE_LANGCHAIN_ANALYSIS = True
+
+
+def validate_description_quality(description: str, title: str = "") -> Tuple[bool, str, str]:
+    """
+    Valide si la description est suffisamment détaillée pour l'implémentation.
+    
+    Args:
+        description: Description de la tâche
+        title: Titre de la tâche (optionnel, pour enrichissement)
+        
+    Returns:
+        Tuple (is_valid, message, enriched_description)
+    """
+    if not description:
+        return False, "Description manquante", title or "Aucune description fournie"
+    
+    description_clean = description.strip()
+    
+    # Cas 1: Description trop courte
+    if len(description_clean) < 20:
+        logger.warning(f"⚠️ Description trop courte ({len(description_clean)} caractères)")
+        if title:
+            enriched = f"""Basé sur le titre: {title}
+
+Analysez le titre pour comprendre ce qui doit être implémenté.
+Si le titre mentionne une méthode/fonction, implémentez-la.
+Si le titre mentionne un fichier, créez/modifiez-le.
+
+Description originale: {description_clean}"""
+            return False, f"Description courte, utilisation du titre", enriched
+        return False, "Description trop courte (< 20 caractères)", description_clean
+    
+    # Cas 2: Mots-clés vagues uniquement
+    vague_keywords = ["statut", "status", "todo", "à faire", "fix", "bug", "test"]
+    if description_clean.lower() in vague_keywords:
+        logger.warning(f"⚠️ Description trop vague: '{description_clean}'")
+        if title:
+            enriched = f"""⚠️ Description originale trop vague: "{description_clean}"
+
+🎯 BASEZ-VOUS SUR LE TITRE: {title}
+
+Analysez le titre pour extraire:
+- QUELLE fonctionnalité implémenter
+- DANS QUEL fichier/classe
+- COMMENT l'implémenter (regardez le contexte du code existant)
+
+Exemple: Si le titre dit "Ajouter méthode count()", alors:
+1. Identifiez la classe cible (ex: GenericDAO)
+2. Créez une méthode public long count()
+3. Implémentez SELECT COUNT(*) FROM table
+"""
+            return False, f"Description vague ('{description_clean}'), utilisation du titre", enriched
+        return False, f"Description trop vague: '{description_clean}'", description_clean
+    
+    # Cas 3: Manque de termes techniques
+    has_technical_terms = any(word in description_clean.lower() for word in [
+        "méthode", "method", "function", "fonction", "classe", "class", 
+        "api", "endpoint", "ajouter", "créer", "create", "modifier", 
+        "modify", "implémenter", "implement", "développer", "fichier",
+        "file", "select", "insert", "update", "delete", "sql"
+    ])
+    
+    if not has_technical_terms and len(description_clean) < 50:
+        logger.warning("⚠️ Description manque de détails techniques")
+        if title:
+            enriched = f"""Description courte et peu technique: {description_clean}
+
+📋 Titre: {title}
+
+Utilisez le titre pour comprendre l'objectif et implémentez en fonction du contexte du code existant.
+"""
+            return False, "Description peu technique, enrichie avec titre", enriched
+    
+    # Description semble acceptable
+    return True, "Description valide", description_clean
 
 
 @with_persistence("analyze_requirements")
@@ -41,6 +119,23 @@ async def analyze_requirements(state: GraphState) -> GraphState:
     try:
         task = state["task"]
         
+        # 0. Valider et enrichir la description si nécessaire
+        is_valid, validation_msg, enriched_description = validate_description_quality(
+            task.description, 
+            task.title
+        )
+        
+        if not is_valid:
+            logger.warning(f"⚠️ Validation description: {validation_msg}")
+            logger.info(f"📝 Description enrichie avec le titre de la tâche")
+            # Utiliser la description enrichie pour l'analyse
+            task.description = enriched_description
+            state["results"]["ai_messages"].append(
+                f"⚠️ Description originale vague, enrichissement avec le titre: {task.title}"
+            )
+        else:
+            logger.info(f"✅ Description valide: {validation_msg}")
+        
         # 1. Préparer le contexte d'analyse
         analysis_context = {
             "task_title": task.title,
@@ -54,32 +149,65 @@ async def analyze_requirements(state: GraphState) -> GraphState:
             "repository_url": task.repository_url
         }
         
-        # 2. Créer le prompt d'analyse détaillé
-        analysis_prompt = _create_analysis_prompt(analysis_context)
-        
-        logger.info("🤖 Génération du plan d'analyse avec AI Engine Hub...")
-        
-        # 3. Utiliser l'AI Engine Hub pour analyser
-        # Enrichir le contexte avec les IDs pour le monitoring
-        analysis_context["workflow_id"] = state.get("workflow_id", "unknown")
-        analysis_context["task_id"] = task.task_id
-        
-        ai_request = AIRequest(
-            prompt=analysis_prompt,
-            task_type=TaskType.ANALYSIS,
-            context=analysis_context
-        )
-        
-        response = await ai_hub.analyze_requirements(ai_request)
-        
-        if not response.success:
-            error_msg = f"Erreur lors de l'analyse des requirements: {response.error}"
-            logger.error(error_msg)
-            state["error"] = error_msg
-            return state
-        
-        # 4. Parser et structurer la réponse d'analyse
-        analysis_result = _parse_analysis_response(response.content)
+        # 2. PHASE 2: Tentative avec la nouvelle chaîne LangChain structurée
+        if USE_LANGCHAIN_ANALYSIS:
+            try:
+                logger.info("🔗 Utilisation de la chaîne LangChain requirements_analysis...")
+                
+                from ai.chains.requirements_analysis_chain import (
+                    generate_requirements_analysis,
+                    extract_analysis_metrics
+                )
+                
+                # Générer l'analyse structurée avec LangChain
+                # ✅ Passer run_step_id pour enregistrer les interactions IA
+                run_step_id = state.get("db_step_id")
+                structured_analysis = await generate_requirements_analysis(
+                    task_title=task.title,
+                    task_description=task.description,
+                    task_type=task.task_type,
+                    priority=task.priority,
+                    acceptance_criteria=task.acceptance_criteria,
+                    technical_context=task.technical_context,
+                    files_to_modify=task.files_to_modify,
+                    repository_url=task.repository_url,
+                    additional_context={
+                        "workflow_id": state.get("workflow_id", "unknown"),
+                        "task_id": task.task_id  # Contexte IA - peut être monday_item_id ou task_id
+                    },
+                    provider="anthropic",
+                    fallback_to_openai=True,
+                    validate_files=False,  # ✅ FIX: Désactivé car le repository n'est pas encore cloné
+                    run_step_id=run_step_id
+                )
+                
+                # Extraire les métriques
+                metrics = extract_analysis_metrics(structured_analysis)
+                
+                logger.info(
+                    f"✅ Analyse structurée générée: "
+                    f"{metrics['total_files']} fichiers, "
+                    f"{metrics['total_risks']} risques, "
+                    f"{metrics['total_ambiguities']} ambiguïtés, "
+                    f"quality_score={metrics['quality_score']:.2f}"
+                )
+                
+                # Convertir en format compatible avec l'ancien format
+                analysis_result = _convert_langchain_analysis_to_legacy_format(
+                    structured_analysis
+                )
+                
+                # Stocker aussi l'analyse structurée complète
+                state["results"]["structured_requirements_analysis"] = structured_analysis.model_dump()
+                state["results"]["analysis_metrics"] = metrics
+                
+            except Exception as e:
+                logger.warning(f"⚠️ Échec chaîne LangChain, fallback vers méthode legacy: {e}")
+                # Fallback vers l'ancienne méthode
+                analysis_result = await _legacy_analyze_requirements(state, analysis_context)
+        else:
+            # Utiliser directement l'ancienne méthode
+            analysis_result = await _legacy_analyze_requirements(state, analysis_context)
         
         # 5. Enrichir l'état avec les résultats d'analyse
         if not state["results"]:
@@ -223,15 +351,34 @@ Fournis une analyse structurée au format JSON avec les clés suivantes :
 }}
 ```
 
-## 🚨 INSTRUCTIONS IMPORTANTES
+## 🚨 INSTRUCTIONS CRITIQUES - FORMAT DE RÉPONSE
 
-1. **Sois spécifique** : Évite les généralités, donne des détails concrets
-2. **Pense aux dépendances** : Identifie les interconnexions entre composants
-3. **Considère la maintenance** : L'impact sur le code existant
-4. **Anticipe les problèmes** : Les points de friction potentiels
-5. **Optimise pour l'automatisation** : Plan adapté à l'exécution par AI-Agent
+**OBLIGATOIRE**: Tu DOIS répondre avec UNIQUEMENT le JSON structuré ci-dessus.
 
-Réponds UNIQUEMENT avec le JSON structuré, sans texte additionnel.
+**FORMAT EXACT REQUIS**:
+```json
+{{
+    "summary": "...",
+    "complexity_analysis": {{ ... }},
+    "implementation_plan": {{ ... }}
+}}
+```
+
+**INTERDIT**:
+- ❌ PAS de texte avant ou après le JSON
+- ❌ PAS d'explications narratives
+- ❌ PAS de markdown sauf le bloc ```json
+- ❌ PAS de commentaires dans le JSON
+
+**OBLIGATOIRE**:
+- ✅ Commence directement par ```json
+- ✅ Termine directement après ```
+- ✅ JSON valide et complet
+- ✅ Toutes les clés requises présentes
+
+Si tu ne peux pas analyser correctement, retourne quand même le JSON avec des valeurs par défaut.
+
+RAPPEL: Cette réponse sera parsée automatiquement - SEUL LE JSON SERA LU.
 """
     
     return prompt
@@ -269,15 +416,27 @@ def _parse_analysis_response(response_content: str) -> Dict[str, Any]:
                 logger.info(f"✅ JSON trouvé avec pattern: {pattern[:20]}...")
                 break
         
-        # Fallback : rechercher directement un objet JSON
+        # Fallback : rechercher directement un objet JSON avec regex améliorée
         if not json_str:
-            json_match = re.search(r'\{[^}]*(?:\{[^}]*\}[^}]*)*\}', response_content, re.DOTALL)
+            # Essayer de trouver un objet JSON complet avec accolades imbriquées
+            # Cette regex trouve un objet JSON même avec plusieurs niveaux d'imbrication
+            json_pattern = r'\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}'
+            json_match = re.search(json_pattern, response_content, re.DOTALL)
             if json_match:
                 json_str = json_match.group(0)
-                logger.info("✅ JSON trouvé par regex directe")
+                logger.info("✅ JSON trouvé par regex directe (pattern amélioré)")
             else:
-                logger.warning("⚠️ Aucun JSON détecté - Génération analyse par défaut")
-                return _generate_analysis_from_text(response_content)
+                # Dernier recours: chercher entre les premières { et dernières }
+                first_brace = response_content.find('{')
+                last_brace = response_content.rfind('}')
+                
+                if first_brace != -1 and last_brace != -1 and last_brace > first_brace:
+                    json_str = response_content[first_brace:last_brace + 1]
+                    logger.info("✅ JSON extrait entre première et dernière accolades")
+                else:
+                    logger.warning("⚠️ Aucun JSON détecté - Génération analyse par défaut depuis le texte")
+                    logger.info(f"📝 Texte de réponse pour analyse: {response_content[:200]}...")
+                    return _generate_analysis_from_text(response_content)
         
         # Étape 2: Nettoyer et convertir JavaScript en JSON valide
         json_str = json_str.strip()
@@ -550,22 +709,47 @@ def _estimate_complexity_from_code(code: str) -> int:
 
 
 def _generate_analysis_from_text(response: str) -> Dict[str, Any]:
-    """Génère une analyse basée sur le texte de réponse."""
+    """Génère une analyse basée sur le texte de réponse avec extraction intelligente."""
+    import re
+    
+    logger.info("🤖 Génération d'analyse intelligente depuis le texte narratif")
     
     # Analyser le contenu textuel pour extraire des informations
     word_count = len(response.split())
     
-    # Détecter la complexité basée sur des mots-clés
-    complexity_keywords = ['complex', 'difficult', 'challenge', 'multiple', 'integration', 'advanced']
-    simple_keywords = ['simple', 'basic', 'easy', 'straightforward', 'quick']
+    # ✅ AMÉLIORATION: Extraction intelligente des étapes depuis le texte
+    steps = _extract_steps_from_text(response)
+    logger.info(f"📋 {len(steps)} étapes extraites du texte")
+    
+    # ✅ AMÉLIORATION: Extraction des fichiers mentionnés avec patterns améliorés
+    files_pattern = r'([a-zA-Z_][a-zA-Z0-9_/]*\.(py|js|ts|jsx|tsx|html|css|json|md|txt))'
+    files_found = list(set(re.findall(files_pattern, response)))
+    refined_files = [f[0] for f in files_found]
+    logger.info(f"📂 {len(refined_files)} fichiers détectés: {refined_files[:3]}")
+    
+    # Détecter la complexité basée sur des mots-clés avec scoring amélioré
+    complexity_keywords = ['complex', 'difficult', 'challenge', 'multiple', 'integration', 'advanced', 
+                          'complexe', 'difficile', 'défi', 'plusieurs', 'intégration', 'avancé', 
+                          'sophisticated', 'intricate', 'compliqué']
+    simple_keywords = ['simple', 'basic', 'easy', 'straightforward', 'quick', 'facile', 'basique', 'rapide',
+                      'simple', 'direct', 'léger', 'minimal']
     
     complexity_mentions = sum(1 for keyword in complexity_keywords if keyword.lower() in response.lower())
     simple_mentions = sum(1 for keyword in simple_keywords if keyword.lower() in response.lower())
     
-    if simple_mentions > complexity_mentions:
+    # ✅ AMÉLIORATION: Calcul de complexité plus nuancé
+    if simple_mentions > complexity_mentions * 2:
+        complexity_score = 2
+        estimated_duration = 20
+        risk_level = "Low"
+    elif simple_mentions > complexity_mentions:
         complexity_score = 3
         estimated_duration = 30
         risk_level = "Low"
+    elif complexity_mentions > simple_mentions * 2:
+        complexity_score = 8
+        estimated_duration = 120
+        risk_level = "High"
     elif complexity_mentions > simple_mentions:
         complexity_score = 7
         estimated_duration = 90
@@ -575,21 +759,24 @@ def _generate_analysis_from_text(response: str) -> Dict[str, Any]:
         estimated_duration = 60
         risk_level = "Medium"
     
+    # ✅ AMÉLIORATION: Ajuster la durée selon le nombre de fichiers
+    if len(refined_files) > 0:
+        estimated_duration += len(refined_files) * 10  # 10 min par fichier supplémentaire
+    
+    # ✅ AMÉLIORATION: Extraire un résumé intelligent
+    summary = _extract_summary_from_text(response)
+    
     return {
-        "summary": f"Analyse textuelle de la réponse IA ({word_count} mots)",
+        "summary": summary,
         "complexity_score": complexity_score,
         "estimated_duration_minutes": estimated_duration,
         "risk_level": risk_level,
-        "refined_files_to_modify": [],
+        "refined_files_to_modify": refined_files,
         "implementation_plan": {
-            "steps": [
-                "Analyser les exigences détaillées",
-                "Concevoir l'architecture",
-                "Implémenter étape par étape",
-                "Tester et valider"
-            ]
+            "steps": steps,
+            "approach": "text-derived"
         },
-        "requires_external_deps": 'install' in response.lower() or 'dependency' in response.lower(),
+        "requires_external_deps": 'install' in response.lower() or 'dependency' in response.lower() or 'dépendance' in response.lower(),
         "breaking_changes_risk": 'breaking' in response.lower() or 'incompatible' in response.lower(),
         "test_strategy": "unit",
         "implementation_approach": "text-analysis",
@@ -597,9 +784,71 @@ def _generate_analysis_from_text(response: str) -> Dict[str, Any]:
             "word_count": word_count,
             "complexity_indicators": complexity_mentions,
             "simplicity_indicators": simple_mentions,
+            "files_detected": len(refined_files),
+            "steps_extracted": len(steps),
             "generated_from_text": True
         }
     }
+
+
+def _extract_steps_from_text(text: str) -> list:
+    """Extrait les étapes depuis un texte non structuré."""
+    import re
+    
+    steps = []
+    
+    # Patterns pour détecter les étapes numérotées
+    numbered_patterns = [
+        r'(?:^|\n)\s*(\d+)[\.\)]\s+([^\n]+)',  # 1. Étape ou 1) Étape
+        r'(?:^|\n)\s*Étape\s+(\d+)\s*:\s*([^\n]+)',  # Étape 1: ...
+        r'(?:^|\n)\s*Step\s+(\d+)\s*:\s*([^\n]+)',  # Step 1: ...
+    ]
+    
+    for pattern in numbered_patterns:
+        matches = re.findall(pattern, text, re.MULTILINE | re.IGNORECASE)
+        if matches:
+            steps = [match[1].strip() if isinstance(match, tuple) else match.strip() for match in matches]
+            break
+    
+    # Si aucune étape numérotée trouvée, chercher les puces
+    if not steps:
+        bullet_patterns = [
+            r'(?:^|\n)\s*[-•*]\s+([^\n]+)',  # - Étape ou • Étape
+        ]
+        
+        for pattern in bullet_patterns:
+            matches = re.findall(pattern, text, re.MULTILINE)
+            if matches and len(matches) >= 2:  # Au moins 2 puces pour être considéré comme des étapes
+                steps = [match.strip() for match in matches[:10]]  # Limiter à 10 étapes max
+                break
+    
+    # Si toujours rien, générer des étapes par défaut
+    if not steps:
+        steps = [
+            "Analyser les exigences de la tâche",
+            "Concevoir l'architecture et le plan",
+            "Implémenter les changements nécessaires",
+            "Tester et valider l'implémentation",
+            "Finaliser et documenter"
+        ]
+    
+    return steps
+
+
+def _extract_summary_from_text(text: str) -> str:
+    """Extrait un résumé intelligent depuis le texte."""
+    # Prendre les 3 premières phrases qui ne sont pas trop courtes
+    sentences = text.split('.')
+    meaningful_sentences = [s.strip() for s in sentences if len(s.strip()) > 30]
+    
+    if meaningful_sentences:
+        summary = '. '.join(meaningful_sentences[:2]) + '.'
+        # Limiter à 200 caractères
+        if len(summary) > 200:
+            summary = summary[:197] + '...'
+        return summary
+    else:
+        return f"Analyse basée sur le texte ({len(text.split())} mots)"
 
 
 def _get_default_analysis_with_error(error_msg: str, raw_response: str = "", risk_level: str = "Medium") -> Dict[str, Any]:
@@ -617,4 +866,122 @@ def _get_default_analysis_with_error(error_msg: str, raw_response: str = "", ris
         "breaking_changes_risk": False,
         "test_strategy": "unit",
         "implementation_approach": "standard"
-    } 
+    }
+
+
+def _convert_langchain_analysis_to_legacy_format(structured_analysis) -> Dict[str, Any]:
+    """
+    Convertit l'analyse LangChain structurée vers le format legacy.
+    
+    Args:
+        structured_analysis: Instance de RequirementsAnalysis (Pydantic)
+        
+    Returns:
+        Dictionnaire au format legacy compatible avec l'ancien code
+    """
+    # Extraire les fichiers candidats
+    refined_files = [f.path for f in structured_analysis.candidate_files]
+    
+    # Convertir les étapes en format simple
+    implementation_steps = []
+    if structured_analysis.candidate_files:
+        for i, file in enumerate(structured_analysis.candidate_files, 1):
+            implementation_steps.append(
+                f"{i}. {file.action.capitalize()} {file.path}: {file.reason}"
+            )
+    
+    # Mapper la complexité vers un score numérique
+    complexity_mapping = {
+        "trivial": 2,
+        "simple": 3,
+        "moderate": 5,
+        "complex": 7,
+        "very_complex": 9
+    }
+    
+    # Mapper le niveau de risque global
+    risk_mapping = {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "critical": "Critical"
+    }
+    
+    # Déterminer le niveau de risque global (le plus élevé trouvé)
+    overall_risk = "Low"
+    if structured_analysis.risks:
+        risk_levels = [r.level.value for r in structured_analysis.risks]
+        if "critical" in risk_levels:
+            overall_risk = "Critical"
+        elif "high" in risk_levels:
+            overall_risk = "High"
+        elif "medium" in risk_levels:
+            overall_risk = "Medium"
+    
+    return {
+        "summary": structured_analysis.task_summary,
+        "complexity_score": structured_analysis.complexity_score,
+        "complexity_level": structured_analysis.complexity.value,
+        "estimated_duration_minutes": structured_analysis.estimated_duration_minutes,
+        "risk_level": overall_risk,
+        "refined_files_to_modify": refined_files,
+        "refined_complexity": complexity_mapping.get(
+            structured_analysis.complexity.value, 
+            structured_analysis.complexity_score
+        ),
+        "implementation_plan": {
+            "steps": implementation_steps,
+            "approach": structured_analysis.implementation_approach
+        },
+        "requires_external_deps": structured_analysis.requires_external_deps,
+        "breaking_changes_risk": structured_analysis.breaking_changes_risk,
+        "test_strategy": structured_analysis.test_strategy,
+        "implementation_approach": structured_analysis.implementation_approach,
+        "estimated_effort": f"{structured_analysis.estimated_duration_minutes} minutes",
+        # Nouvelles données structurées
+        "dependencies": [d.model_dump() for d in structured_analysis.dependencies],
+        "risks": [r.model_dump() for r in structured_analysis.risks],
+        "ambiguities": [a.model_dump() for a in structured_analysis.ambiguities],
+        "missing_info": structured_analysis.missing_info,
+        "quality_score": structured_analysis.quality_score
+    }
+
+
+async def _legacy_analyze_requirements(state: GraphState, analysis_context: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Méthode legacy d'analyse des requirements (fallback).
+    Encapsule l'ancien code pour permettre un fallback gracieux.
+    
+    Args:
+        state: État du graphe
+        analysis_context: Contexte de l'analyse
+        
+    Returns:
+        Résultat de l'analyse au format legacy
+    """
+    logger.info("📜 Utilisation de la méthode legacy d'analyse...")
+    
+    # Créer le prompt d'analyse détaillé
+    analysis_prompt = _create_analysis_prompt(analysis_context)
+    
+    # Enrichir le contexte avec les IDs pour le monitoring
+    analysis_context["workflow_id"] = state.get("workflow_id", "unknown")
+    analysis_context["task_id"] = state["task"].task_id
+    
+    ai_request = AIRequest(
+        prompt=analysis_prompt,
+        task_type=TaskType.ANALYSIS,
+        context=analysis_context
+    )
+    
+    response = await ai_hub.analyze_requirements(ai_request)
+    
+    if not response.success:
+        error_msg = f"Erreur lors de l'analyse des requirements: {response.error}"
+        logger.error(error_msg)
+        return _get_default_analysis_with_error(error_msg)
+    
+    # Parser et structurer la réponse d'analyse
+    analysis_result = _parse_analysis_response(response.content)
+    
+    return analysis_result 
